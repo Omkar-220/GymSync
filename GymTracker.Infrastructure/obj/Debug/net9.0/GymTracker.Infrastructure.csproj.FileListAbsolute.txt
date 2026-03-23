@@ -1,0 +1,17 @@
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\bin\Debug\net9.0\GymTracker.Infrastructure.deps.json
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\bin\Debug\net9.0\GymTracker.Infrastructure.runtimeconfig.json
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\bin\Debug\net9.0\GymTracker.Infrastructure.dll
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\bin\Debug\net9.0\GymTracker.Infrastructure.pdb
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\bin\Debug\net9.0\GymTracker.Core.dll
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\bin\Debug\net9.0\GymTracker.Core.pdb
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.AssemblyInfo.cs
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTrack.BA4D32D7.Up2Date
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.dll
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\refint\GymTracker.Infrastructure.dll
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.pdb
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.genruntimeconfig.cache
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\ref\GymTracker.Infrastructure.dll
