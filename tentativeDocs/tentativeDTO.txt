@@ -1,0 +1,65 @@
+public class StartWorkoutRequest
+{
+    public int UserId { get; set; }
+    public DayOfWeek Day { get; set; }
+}
+
+public class LogSetRequest
+{
+    public int ExerciseId { get; set; }
+    public int SetNumber { get; set; }
+    public decimal Weight { get; set; }
+    public int Reps { get; set; }
+}
+
+public class CreateSplitRequest
+{
+    public int UserId { get; set; }
+    public DayOfWeek DayOfWeek { get; set; }
+    public string Tag { get; set; }
+    public TrainingStyle TrainingStyle { get; set; }
+}
+
+public class AddExerciseRequest
+{
+    public int ExerciseId { get; set; }
+    public int Order { get; set; }
+}
+
+public class NutritionLogDto
+{
+    public int UserId { get; set; }
+    public DateTime LogDate { get; set; }
+    public decimal Protein { get; set; }
+    public decimal Carbs { get; set; }
+    public decimal Fats { get; set; }
+    public decimal Zinc { get; set; }
+    public decimal Calories { get; set; }
+    public string Notes { get; set; }
+}
+
+public class WorkoutProgress
+{
+    public int ExerciseId { get; set; }
+    public List<DailyProgress> ProgressData { get; set; }
+}
+
+public class DailyProgress
+{
+    public DateTime Date { get; set; }
+    public decimal MaxWeight { get; set; }
+    public decimal TotalVolume { get; set; }
+    public int SetsCompleted { get; set; }
+    public WorkoutSet BestSet { get; set; }
+}
+
+public class NutritionSummary
+{
+    public DateTime Date { get; set; }
+    public decimal TotalProtein { get; set; }
+    public decimal TotalCarbs { get; set; }
+    public decimal TotalFats { get; set; }
+    public decimal TotalZinc { get; set; }
+    public decimal TotalCalories { get; set; }
+    public bool IsComplete { get; set; }
+}

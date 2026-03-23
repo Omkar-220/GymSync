@@ -1,0 +1,1 @@
+Seed the exercises such that when the user logs in to add it it's not empty 

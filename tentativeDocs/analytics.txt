@@ -1,0 +1,30 @@
+WorkoutAnalytics
+
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public DateTime AnalysisDate { get; set; }
+    
+    // Volume metrics
+    public decimal TotalVolume { get; set; }  // Weight × Reps across all exercises
+    public decimal AverageWeight { get; set; }
+    public int TotalSets { get; set; }
+    public int TotalReps { get; set; }
+    
+    // Strength metrics
+    public decimal StrengthScore { get; set; }  // Composite strength metric
+    public Dictionary<int, decimal> ExerciseOneRepMaxes { get; set; }
+    
+    // Consistency metrics
+    public int WorkoutsPerWeek { get; set; }
+    public decimal ConsistencyScore { get; set; }  // 0-100%
+    
+    // Recovery metrics
+    public decimal FatigueIndex { get; set; }
+    public decimal ReadinessScore { get; set; }
+    
+    // Progress metrics
+    public decimal StrengthImprovementRate { get; set; }  // % per month
+    public decimal VolumeImprovementRate { get; set; }
+    
+    public User User { get; set; }
+

@@ -11,5 +11,5 @@ namespace GymTracker.Core.Entities
         public ICollection<Split> Splits { get; set; } = new List<Split>();
         public ICollection<Workout> Workouts { get; set; } = new List<Workout>();
         public ICollection<NutritionLog> NutritionLogs { get; set; } = new List<NutritionLog>();
-    }
+    }   
 }

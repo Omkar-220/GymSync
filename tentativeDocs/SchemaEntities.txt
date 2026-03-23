@@ -1,0 +1,210 @@
+Schemas- 
+        Exercise 
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string MuscleGroup { get; set; }
+    public string Equipment { get; set; }
+    public bool IsActive { get; set; } -- why tis? 
+    public DateTime CreatedAt { get; set; }
+    public int DifficultyLevel { get; set; }  // 1-5 (Beginner to Expert)
+    public int EstimatedCaloriesPerSet { get; set; }  // Rough calorie burn estimation
+    public decimal DefaultWeightIncrement { get; set; }  // 2.5kg for barbell exercises, etc.
+    public int TotalUsersPerformed { get; set; }  // Popularity metric
+    public bool IsMeasurable { get; set; }  // Some exercises like planks are time-based
+    public MeasurementType MeasurementType { get; set; }  // Weight, Time, Distance, Reps only
+
+    public ICollection<PersonalRecord> PersonalRecords { get; set; }
+    public ICollection<SplitExercise> SplitExercises { get; set; }
+    public ICollection<WorkoutSet> WorkoutSets { get; set; }
+
+    public enum MeasurementType
+{
+    WeightAndReps = 1,    // Most weightlifting exercises
+    Time = 2,             // Planks, holds
+    Distance = 3,         // Running, rowing
+    RepsOnly = 4,         // Bodyweight exercises
+    Calories = 5,         // Cardio machines
+    Speed = 6,            // Sprint times
+    RPE = 7               // Rate of perceived exertion
+}
+
+
+
+        User 
+    public int Id { get; set; }
+    public string Username { get; set; }
+    public string Email { get; set; }
+    public DateTime CreatedAt { get; set; }
+    
+    public ICollection<Split> Splits { get; set; }
+    public ICollection<Workout> Workouts { get; set; }
+    public ICollection<NutritionLog> NutritionLogs { get; set; }
+
+
+        RepRange
+    public int MinReps { get; set; }
+    public int MaxReps { get; set; }
+    public string Goal { get; set; }  // Strength, Hypertrophy, Endurance
+    
+    public static RepRange ForStrength() => new() { MinReps = 1, MaxReps = 5, Goal = "Strength" };
+    public static RepRange ForHypertrophy() => new() { MinReps = 6, MaxReps = 12, Goal = "Hypertrophy" };
+    public static RepRange ForEndurance() => new() { MinReps = 12, MaxReps = 20, Goal = "Endurance" };
+
+
+        SplitExercise
+    public int Id { get; set; }
+    public int SplitId { get; set; }
+    public int ExerciseId { get; set; }
+    public int Order { get; set; }
+    public int? DefaultSets { get; set; }  // Optional: override default sets
+    public int? DefaultReps { get; set; }  // Optional: override default reps
+    
+    // Navigation properties
+    public Split Split { get; set; }
+    public Exercise Exercise { get; set; }
+
+        Split 
+
+    public int Id { get; set; } // is this exercise id? 
+    public int UserId { get; set; }
+    public DayOfWeek DayOfWeek { get; set; }
+    public string Tag { get; set; } // "Push", "Pull", "Legs", etc.
+    public TrainingStyle TrainingStyle { get; set; }
+    public bool IsActive { get; set; }
+    
+    
+ 
+    public User User { get; set; } 
+    public ICollection<SplitExercise> SplitExercises { get; set; }
+
+
+        Workout
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public DateTime WorkoutDate { get; set; }
+    public int? SplitId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    
+
+    public User User { get; set; }
+    public Split Split { get; set; }
+    public ICollection<WorkoutSet> WorkoutSets { get; set; }
+
+    public enum TrainingStyle
+{
+    PowerLifting = 1,
+    Hypertrophy = 2,
+    Endurance = 3
+}
+
+
+     
+        WorkoutSet
+
+    public int Id { get; set; }
+    public int WorkoutId { get; set; }
+    public int ExerciseId { get; set; }
+    public int SetNumber { get; set; }
+    public decimal Weight { get; set; }
+    public int Reps { get; set; }
+    public bool IsCompleted { get; set; }
+    public FormQuality FormQuality { get; set; }  // Excellent, Good, Fair, Poor
+    public int? FatigueLevel { get; set; }  // 1-5
+    public SetQuality Quality { get; set; }  // Perfect, Good, Grindy, Failed
+    public int? RepsInReserve { get; set; }  // RIR: 0-5, how many reps left in tank
+    public DateTime CompletedAt { get; set; }
+    public Workout Workout { get; set; }
+    public Exercise Exercise { get; set; }
+    public int? PerceivedExertion { get; set; }  // RPE 1-10
+        
+
+public enum SetQuality
+{
+    Perfect = 1,    // Smooth, controlled, explosive
+    Good = 2,       // Slight form breakdown
+    Grindy = 3,     // Tough, form breaking down
+    Failed = 4,     // Couldn't complete
+    Skipped = 5
+}
+
+public enum FormQuality
+{
+    Excellent = 1,
+    Good = 2,
+    Fair = 3,
+    Poor = 4
+}
+
+
+
+
+
+         PersonalRecord
+
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public int ExerciseId { get; set; }
+    public PRType Type { get; set; }  // OneRepMax, FiveRepMax, Volume, etc.
+    public decimal Value { get; set; }  // Weight in kg or volume
+    public int Reps { get; set; }
+    public DateTime AchievedAt { get; set; }
+    public int WorkoutSetId { get; set; }
+    
+    public User User { get; set; }
+    public Exercise Exercise { get; set; }
+    public WorkoutSet WorkoutSet { get; set}
+
+    public enum PRType
+{
+    OneRepMax = 1,
+    ThreeRepMax = 2,
+    FiveRepMax = 3,
+    TenRepMax = 4,
+    TotalVolume = 5,      // Weight × Reps
+    MaxWeight = 6,
+    MaxRepsAtWeight = 7,
+    EstimatedOneRepMax = 8
+}
+
+
+// Core/Entities/WorkoutGoal.cs
+         WorkoutGoal
+
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public GoalType Type { get; set; }  // Strength, Hypertrophy, Endurance, WeightLoss
+    public int TargetExerciseId { get; set; }
+    public decimal TargetWeight { get; set; }
+    public int? TargetReps { get; set; }
+    public DateTime TargetDate { get; set; }
+    public bool IsAchieved { get; set; }
+    public DateTime? AchievedAt { get; set; }
+    
+    public User User { get; set; }
+
+public enum GoalType
+{
+    Strength = 1,
+    Hypertrophy = 2,
+    Endurance = 3,
+    WeightLoss = 4,
+    BodyRecomposition = 5
+}
+         
+
+
+public class NutritionLog
+{
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public DateTime LogDate { get; set; }
+    public decimal Protein { get; set; } // in grams
+    public decimal Carbs { get; set; } // in grams
+    public decimal Fats { get; set; } // in grams
+    public decimal Zinc { get; set; } // in mg
+    public decimal Calories { get; set; }
+    public string Notes { get; set; }
+    
+    // Navigation properties
+    public User User { get; set; }
+}
