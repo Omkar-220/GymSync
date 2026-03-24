@@ -9,6 +9,7 @@ C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infr
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.AssemblyInfoInputs.cache
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.AssemblyInfo.cs
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.sourcelink.json
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTrack.BA4D32D7.Up2Date
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\GymTracker.Infrastructure.dll
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Infrastructure\obj\Debug\net9.0\refint\GymTracker.Infrastructure.dll

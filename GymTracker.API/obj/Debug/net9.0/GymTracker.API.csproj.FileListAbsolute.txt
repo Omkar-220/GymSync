@@ -142,6 +142,7 @@ C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\obj\Debug\net9.0\GymTracker.API.csproj.CoreCompileInputs.cache
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\obj\Debug\net9.0\GymTracker.API.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\obj\Debug\net9.0\GymTracker.API.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\obj\Debug\net9.0\GymTracker.API.sourcelink.json
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\obj\Debug\net9.0\scopedcss\bundle\GymTracker.API.styles.css
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\obj\Debug\net9.0\staticwebassets.build.json
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\obj\Debug\net9.0\staticwebassets.development.json

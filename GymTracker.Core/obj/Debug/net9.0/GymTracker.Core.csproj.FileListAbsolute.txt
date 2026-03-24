@@ -5,6 +5,7 @@ C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Core
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Core\obj\Debug\net9.0\GymTracker.Core.AssemblyInfoInputs.cache
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Core\obj\Debug\net9.0\GymTracker.Core.AssemblyInfo.cs
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Core\obj\Debug\net9.0\GymTracker.Core.csproj.CoreCompileInputs.cache
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Core\obj\Debug\net9.0\GymTracker.Core.sourcelink.json
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Core\obj\Debug\net9.0\GymTracker.Core.dll
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Core\obj\Debug\net9.0\refint\GymTracker.Core.dll
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.Core\obj\Debug\net9.0\GymTracker.Core.pdb

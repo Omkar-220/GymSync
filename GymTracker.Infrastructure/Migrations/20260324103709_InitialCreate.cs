@@ -50,32 +50,6 @@ namespace GymTracker.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "NutritionLogs",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    LogDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Protein = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Carbs = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Fats = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Zinc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Calories = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_NutritionLogs", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_NutritionLogs_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Splits",
                 columns: table => new
                 {
@@ -155,6 +129,85 @@ namespace GymTracker.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "NutritionLogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    LogDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Protein = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Carbs = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Fats = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Zinc = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Calories = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WorkoutId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NutritionLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_NutritionLogs_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_NutritionLogs_Workouts_WorkoutId",
+                        column: x => x.WorkoutId,
+                        principalTable: "Workouts",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WorkoutGoals",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    TargetExerciseId = table.Column<int>(type: "int", nullable: false),
+                    TargetWeight = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TargetReps = table.Column<int>(type: "int", nullable: true),
+                    TargetDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsAchieved = table.Column<bool>(type: "bit", nullable: false),
+                    AchievedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AchievedInWorkoutId = table.Column<int>(type: "int", nullable: true),
+                    WorkoutGoalId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkoutGoals", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WorkoutGoals_Exercises_TargetExerciseId",
+                        column: x => x.TargetExerciseId,
+                        principalTable: "Exercises",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_WorkoutGoals_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_WorkoutGoals_WorkoutGoals_WorkoutGoalId",
+                        column: x => x.WorkoutGoalId,
+                        principalTable: "WorkoutGoals",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_WorkoutGoals_Workouts_AchievedInWorkoutId",
+                        column: x => x.AchievedInWorkoutId,
+                        principalTable: "Workouts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WorkoutSets",
                 columns: table => new
                 {
@@ -162,6 +215,7 @@ namespace GymTracker.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     WorkoutId = table.Column<int>(type: "int", nullable: false),
                     ExerciseId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     SetNumber = table.Column<int>(type: "int", nullable: false),
                     Weight = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Reps = table.Column<int>(type: "int", nullable: false),
@@ -171,7 +225,8 @@ namespace GymTracker.Infrastructure.Migrations
                     Quality = table.Column<int>(type: "int", nullable: false),
                     RepsInReserve = table.Column<int>(type: "int", nullable: true),
                     CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PerceivedExertion = table.Column<int>(type: "int", nullable: true)
+                    PerceivedExertion = table.Column<int>(type: "int", nullable: true),
+                    PersonalRecordId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -180,6 +235,12 @@ namespace GymTracker.Infrastructure.Migrations
                         name: "FK_WorkoutSets_Exercises_ExerciseId",
                         column: x => x.ExerciseId,
                         principalTable: "Exercises",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_WorkoutSets_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -202,7 +263,8 @@ namespace GymTracker.Infrastructure.Migrations
                     Value = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Reps = table.Column<int>(type: "int", nullable: false),
                     AchievedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    WorkoutSetId = table.Column<int>(type: "int", nullable: false)
+                    WorkoutSetId = table.Column<int>(type: "int", nullable: false),
+                    PreviousRecord = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -239,6 +301,11 @@ namespace GymTracker.Infrastructure.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_NutritionLogs_WorkoutId",
+                table: "NutritionLogs",
+                column: "WorkoutId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PersonalRecords_ExerciseId",
                 table: "PersonalRecords",
                 column: "ExerciseId");
@@ -251,7 +318,8 @@ namespace GymTracker.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_PersonalRecords_WorkoutSetId",
                 table: "PersonalRecords",
-                column: "WorkoutSetId");
+                column: "WorkoutSetId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_SplitExercises_ExerciseId",
@@ -275,6 +343,27 @@ namespace GymTracker.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_WorkoutGoals_AchievedInWorkoutId",
+                table: "WorkoutGoals",
+                column: "AchievedInWorkoutId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkoutGoals_TargetExerciseId",
+                table: "WorkoutGoals",
+                column: "TargetExerciseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkoutGoals_UserId_TargetExerciseId_Type",
+                table: "WorkoutGoals",
+                columns: new[] { "UserId", "TargetExerciseId", "Type" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkoutGoals_WorkoutGoalId",
+                table: "WorkoutGoals",
+                column: "WorkoutGoalId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Workouts_SplitId",
                 table: "Workouts",
                 column: "SplitId");
@@ -288,6 +377,11 @@ namespace GymTracker.Infrastructure.Migrations
                 name: "IX_WorkoutSets_ExerciseId",
                 table: "WorkoutSets",
                 column: "ExerciseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WorkoutSets_UserId",
+                table: "WorkoutSets",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WorkoutSets_WorkoutId_ExerciseId_SetNumber",
@@ -307,6 +401,9 @@ namespace GymTracker.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "SplitExercises");
+
+            migrationBuilder.DropTable(
+                name: "WorkoutGoals");
 
             migrationBuilder.DropTable(
                 name: "WorkoutSets");

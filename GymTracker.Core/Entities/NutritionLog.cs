@@ -11,7 +11,7 @@ namespace GymTracker.Core.Entities
         public decimal Zinc { get; set; }
         public decimal Calories { get; set; }
         public string Notes { get; set; } = string.Empty;
-        public int? workoutId   { get; set;}
+        public int? WorkoutId   { get; set;}
 
         
         

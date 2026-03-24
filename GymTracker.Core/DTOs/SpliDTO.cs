@@ -2,8 +2,6 @@ using GymTracker.Core.Enums;
 
 namespace GymTracker.Core.DTOs
 {
-
-    
     public class CreateSplitRequest
     {
         public int UserId { get; set; }
@@ -25,7 +23,6 @@ namespace GymTracker.Core.DTOs
         public TrainingStyle? TrainingStyle { get; set; }
         public bool? IsActive { get; set; }
     }
-
     
     public class SplitResponse
     {

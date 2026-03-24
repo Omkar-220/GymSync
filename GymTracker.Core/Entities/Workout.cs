@@ -12,5 +12,6 @@ namespace GymTracker.Core.Entities
         public User User { get; set; } = null!;
         public Split Split { get; set; } = null!;
         public ICollection<WorkoutSet> WorkoutSets { get; set; } = new List<WorkoutSet>();
+        public ICollection<WorkoutGoal> AchievedGoals { get; set; } = new List<WorkoutGoal>(); 
     }
 }

@@ -18,6 +18,7 @@ namespace GymTracker.Infrastructure.Data
         public DbSet<WorkoutSet> WorkoutSets { get; set; }
         public DbSet<NutritionLog> NutritionLogs { get; set; }
         public DbSet<PersonalRecord> PersonalRecords { get; set; }
+        public DbSet<WorkoutGoal> WorkoutGoals { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -52,16 +53,24 @@ namespace GymTracker.Infrastructure.Data
                 .Property(p => p.Value)
                 .HasPrecision(18, 2);
             
+            modelBuilder.Entity<PersonalRecord>()
+                .Property(p => p.PreviousRecord)
+                .HasPrecision(18, 2);
+            
             modelBuilder.Entity<WorkoutSet>()
                 .Property(w => w.Weight)
                 .HasPrecision(18, 2);
             
-            // Configure relationships with NO ACTION to avoid cascade cycles
+            modelBuilder.Entity<WorkoutGoal>()
+                .Property(wg => wg.TargetWeight)
+                .HasPrecision(18, 2);
+            
+            // Configure relationships
             modelBuilder.Entity<Split>()
                 .HasOne(s => s.User)
                 .WithMany(u => u.Splits)
                 .HasForeignKey(s => s.UserId)
-                .OnDelete(DeleteBehavior.Restrict); // Changed from Cascade
+                .OnDelete(DeleteBehavior.Restrict);
             
             modelBuilder.Entity<SplitExercise>()
                 .HasOne(se => se.Split)
@@ -79,7 +88,7 @@ namespace GymTracker.Infrastructure.Data
                 .HasOne(w => w.User)
                 .WithMany(u => u.Workouts)
                 .HasForeignKey(w => w.UserId)
-                .OnDelete(DeleteBehavior.Restrict); // Changed from Cascade
+                .OnDelete(DeleteBehavior.Restrict);
             
             modelBuilder.Entity<Workout>()
                 .HasOne(w => w.Split)
@@ -99,17 +108,30 @@ namespace GymTracker.Infrastructure.Data
                 .HasForeignKey(ws => ws.ExerciseId)
                 .OnDelete(DeleteBehavior.Restrict);
             
+            modelBuilder.Entity<WorkoutSet>()
+                .HasOne(ws => ws.User)
+                .WithMany(u => u.WorkoutSets)
+                .HasForeignKey(ws => ws.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
             modelBuilder.Entity<NutritionLog>()
                 .HasOne(n => n.User)
                 .WithMany(u => u.NutritionLogs)
                 .HasForeignKey(n => n.UserId)
-                .OnDelete(DeleteBehavior.Restrict); // Changed from Cascade
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // ✅ FIXED: One-to-one relationship between WorkoutSet and PersonalRecord
+            modelBuilder.Entity<PersonalRecord>()
+                .HasOne(pr => pr.WorkoutSet)
+                .WithOne(ws => ws.PersonalRecord)
+                .HasForeignKey<PersonalRecord>(pr => pr.WorkoutSetId)
+                .OnDelete(DeleteBehavior.Restrict);
             
             modelBuilder.Entity<PersonalRecord>()
                 .HasOne(pr => pr.User)
-                .WithMany()
+                .WithMany(u => u.PersonalRecords)
                 .HasForeignKey(pr => pr.UserId)
-                .OnDelete(DeleteBehavior.Restrict); // Changed from Cascade
+                .OnDelete(DeleteBehavior.Restrict);
             
             modelBuilder.Entity<PersonalRecord>()
                 .HasOne(pr => pr.Exercise)
@@ -117,11 +139,24 @@ namespace GymTracker.Infrastructure.Data
                 .HasForeignKey(pr => pr.ExerciseId)
                 .OnDelete(DeleteBehavior.Restrict);
             
-            modelBuilder.Entity<PersonalRecord>()
-                .HasOne(pr => pr.WorkoutSet)
-                .WithMany()
-                .HasForeignKey(pr => pr.WorkoutSetId)
+            // WorkoutGoal configurations
+            modelBuilder.Entity<WorkoutGoal>()
+                .HasOne(wg => wg.User)
+                .WithMany(u => u.WorkoutGoals)
+                .HasForeignKey(wg => wg.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            modelBuilder.Entity<WorkoutGoal>()
+                .HasOne(wg => wg.TargetExercise)
+                .WithMany(e => e.WorkoutGoals)
+                .HasForeignKey(wg => wg.TargetExerciseId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            modelBuilder.Entity<WorkoutGoal>()
+                .HasOne(wg => wg.AchievedInWorkout)
+                .WithMany(w => w.AchievedGoals)
+                .HasForeignKey(wg => wg.AchievedInWorkoutId)
+                .OnDelete(DeleteBehavior.SetNull);
             
             // Indexes for performance
             modelBuilder.Entity<Exercise>()
@@ -132,7 +167,10 @@ namespace GymTracker.Infrastructure.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
             
-            // Configure table names and constraints
+            modelBuilder.Entity<WorkoutGoal>()
+                .HasIndex(wg => new { wg.UserId, wg.TargetExerciseId, wg.Type })
+                .IsUnique();
+            
             modelBuilder.Entity<WorkoutSet>()
                 .HasIndex(ws => new { ws.WorkoutId, ws.ExerciseId, ws.SetNumber })
                 .IsUnique();

@@ -22,5 +22,6 @@ namespace GymTracker.Core.Entities
         public User User { get; set; } = null!;
         public Exercise TargetExercise { get; set; } = null!;
         public Workout? AchievedInWorkout { get; set; }
+        public ICollection<WorkoutGoal> WorkoutGoals { get; set; } = new List<WorkoutGoal>(); 
     }
 }

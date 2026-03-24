@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GymTracker.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260323112754_InitialCreate")]
+    [Migration("20260324103709_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace GymTracker.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -112,6 +112,9 @@ namespace GymTracker.Infrastructure.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("WorkoutId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Zinc")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -119,6 +122,8 @@ namespace GymTracker.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("WorkoutId");
 
                     b.ToTable("NutritionLogs");
                 });
@@ -136,6 +141,10 @@ namespace GymTracker.Infrastructure.Migrations
 
                     b.Property<int>("ExerciseId")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("PreviousRecord")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Reps")
                         .HasColumnType("int");
@@ -159,7 +168,8 @@ namespace GymTracker.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("WorkoutSetId");
+                    b.HasIndex("WorkoutSetId")
+                        .IsUnique();
 
                     b.ToTable("PersonalRecords");
                 });
@@ -280,6 +290,65 @@ namespace GymTracker.Infrastructure.Migrations
                     b.ToTable("Workouts");
                 });
 
+            modelBuilder.Entity("GymTracker.Core.Entities.WorkoutGoal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AchievedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("AchievedInWorkoutId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsAchieved")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("TargetDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TargetExerciseId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TargetReps")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TargetWeight")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WorkoutGoalId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AchievedInWorkoutId");
+
+                    b.HasIndex("TargetExerciseId");
+
+                    b.HasIndex("WorkoutGoalId");
+
+                    b.HasIndex("UserId", "TargetExerciseId", "Type")
+                        .IsUnique();
+
+                    b.ToTable("WorkoutGoals");
+                });
+
             modelBuilder.Entity("GymTracker.Core.Entities.WorkoutSet", b =>
                 {
                     b.Property<int>("Id")
@@ -306,6 +375,9 @@ namespace GymTracker.Infrastructure.Migrations
                     b.Property<int?>("PerceivedExertion")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PersonalRecordId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quality")
                         .HasColumnType("int");
 
@@ -318,6 +390,9 @@ namespace GymTracker.Infrastructure.Migrations
                     b.Property<int>("SetNumber")
                         .HasColumnType("int");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Weight")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -328,6 +403,8 @@ namespace GymTracker.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ExerciseId");
+
+                    b.HasIndex("UserId");
 
                     b.HasIndex("WorkoutId", "ExerciseId", "SetNumber")
                         .IsUnique();
@@ -343,7 +420,13 @@ namespace GymTracker.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("GymTracker.Core.Entities.Workout", "Workout")
+                        .WithMany()
+                        .HasForeignKey("WorkoutId");
+
                     b.Navigation("User");
+
+                    b.Navigation("Workout");
                 });
 
             modelBuilder.Entity("GymTracker.Core.Entities.PersonalRecord", b =>
@@ -355,14 +438,14 @@ namespace GymTracker.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("GymTracker.Core.Entities.User", "User")
-                        .WithMany()
+                        .WithMany("PersonalRecords")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("GymTracker.Core.Entities.WorkoutSet", "WorkoutSet")
-                        .WithMany()
-                        .HasForeignKey("WorkoutSetId")
+                        .WithOne("PersonalRecord")
+                        .HasForeignKey("GymTracker.Core.Entities.PersonalRecord", "WorkoutSetId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -421,11 +504,47 @@ namespace GymTracker.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("GymTracker.Core.Entities.WorkoutGoal", b =>
+                {
+                    b.HasOne("GymTracker.Core.Entities.Workout", "AchievedInWorkout")
+                        .WithMany("AchievedGoals")
+                        .HasForeignKey("AchievedInWorkoutId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("GymTracker.Core.Entities.Exercise", "TargetExercise")
+                        .WithMany("WorkoutGoals")
+                        .HasForeignKey("TargetExerciseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GymTracker.Core.Entities.User", "User")
+                        .WithMany("WorkoutGoals")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GymTracker.Core.Entities.WorkoutGoal", null)
+                        .WithMany("WorkoutGoals")
+                        .HasForeignKey("WorkoutGoalId");
+
+                    b.Navigation("AchievedInWorkout");
+
+                    b.Navigation("TargetExercise");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("GymTracker.Core.Entities.WorkoutSet", b =>
                 {
                     b.HasOne("GymTracker.Core.Entities.Exercise", "Exercise")
                         .WithMany("WorkoutSets")
                         .HasForeignKey("ExerciseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GymTracker.Core.Entities.User", "User")
+                        .WithMany("WorkoutSets")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -437,6 +556,8 @@ namespace GymTracker.Infrastructure.Migrations
 
                     b.Navigation("Exercise");
 
+                    b.Navigation("User");
+
                     b.Navigation("Workout");
                 });
 
@@ -445,6 +566,8 @@ namespace GymTracker.Infrastructure.Migrations
                     b.Navigation("PersonalRecords");
 
                     b.Navigation("SplitExercises");
+
+                    b.Navigation("WorkoutGoals");
 
                     b.Navigation("WorkoutSets");
                 });
@@ -458,14 +581,32 @@ namespace GymTracker.Infrastructure.Migrations
                 {
                     b.Navigation("NutritionLogs");
 
+                    b.Navigation("PersonalRecords");
+
                     b.Navigation("Splits");
+
+                    b.Navigation("WorkoutGoals");
+
+                    b.Navigation("WorkoutSets");
 
                     b.Navigation("Workouts");
                 });
 
             modelBuilder.Entity("GymTracker.Core.Entities.Workout", b =>
                 {
+                    b.Navigation("AchievedGoals");
+
                     b.Navigation("WorkoutSets");
+                });
+
+            modelBuilder.Entity("GymTracker.Core.Entities.WorkoutGoal", b =>
+                {
+                    b.Navigation("WorkoutGoals");
+                });
+
+            modelBuilder.Entity("GymTracker.Core.Entities.WorkoutSet", b =>
+                {
+                    b.Navigation("PersonalRecord");
                 });
 #pragma warning restore 612, 618
         }

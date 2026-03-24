@@ -24,7 +24,6 @@ namespace GymTracker.Core.DTOs
         public string? Notes { get; set; }
     }
     
-    // ========== RESPONSE DTOS (Output) ==========
     
     public class WorkoutGoalResponse
     {
