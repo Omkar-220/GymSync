@@ -21,5 +21,11 @@ namespace GymTracker.Core.Entities
         
         public Workout Workout { get; set; } = null!;
         public Exercise Exercise { get; set; } = null!;
+        public PersonalRecord? PersonalRecord { get; set; } 
+        public int? PersonalRecordId { get; set; } 
+        public User User { get; set; } = null!;
+        public int? PersonalRecordId { get; set; }  
+
+
     }
 }

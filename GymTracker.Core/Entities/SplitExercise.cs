@@ -11,5 +11,6 @@ namespace GymTracker.Core.Entities
         
         public Split Split { get; set; } = null!;
         public Exercise Exercise { get; set; } = null!;
+        
     }
 }
