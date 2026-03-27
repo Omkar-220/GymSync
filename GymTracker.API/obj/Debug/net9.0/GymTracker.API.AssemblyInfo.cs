@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GymTracker.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+16974c99d1a4af7f77d71af63c88082dc8d5bde1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1bd521a66005c501ea37e06c8ae8fc80afece1d4")]
 [assembly: System.Reflection.AssemblyProductAttribute("GymTracker.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GymTracker.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

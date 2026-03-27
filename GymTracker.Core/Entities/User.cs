@@ -6,6 +6,11 @@ namespace GymTracker.Core.Entities
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string FirstName { get; set; } = string.Empty;  
+        public string LastName { get; set; } = string.Empty;   
+        public decimal? Weight { get; set; }                   
+        public decimal? Height { get; set; }                   
+        public bool IsActive { get; set; } = true;             
         
             
         public ICollection<Split> Splits { get; set; } = new List<Split>();
