@@ -10,7 +10,7 @@ namespace GymTracker.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         
-        public ExerciseController(ApplicationDbContext context)
+        public ExerciseController(ApplicationDbContext context) 
         {
             _context = context;
         }
