@@ -37,19 +37,18 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-// Auto-migrate database on startup --- gotta check this out again 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    try
-    {
-        dbContext.Database.EnsureCreated();
-        Console.WriteLine("Database created/verified successfully");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Database error: {ex.Message}");
-    }
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//     try
+//     {
+//         dbContext.Database.EnsureCreated();
+//         Console.WriteLine("Database created/verified successfully");
+//     }
+//     catch (Exception ex)
+//     {
+//         Console.WriteLine($"Database error: {ex.Message}");
+//     }
+// }
 
 app.Run();
