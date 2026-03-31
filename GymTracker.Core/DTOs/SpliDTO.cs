@@ -2,6 +2,8 @@ using GymTracker.Core.Enums;
 
 namespace GymTracker.Core.DTOs
 {
+   
+    
     public class CreateSplitRequest
     {
         public int UserId { get; set; }
@@ -10,6 +12,15 @@ namespace GymTracker.Core.DTOs
         public TrainingStyle TrainingStyle { get; set; }
     }
     
+    public class UpdateSplitRequest
+    {
+        public string? Tag { get; set; }
+        public TrainingStyle? TrainingStyle { get; set; }
+        public bool? IsActive { get; set; }
+    }
+    
+   
+    
     public class AddExerciseToSplitRequest
     {
         public int ExerciseId { get; set; }
@@ -17,12 +28,30 @@ namespace GymTracker.Core.DTOs
         public int? DefaultSets { get; set; }
     }
     
-    public class UpdateSplitRequest
+    public class UpdateSplitExerciseRequest
     {
-        public string? Tag { get; set; }
-        public TrainingStyle? TrainingStyle { get; set; }
+        public int? Order { get; set; }
+        public int? DefaultSets { get; set; }
         public bool? IsActive { get; set; }
     }
+    
+    public class ReorderSplitExercisesRequest
+    {
+        public List<ExerciseOrderUpdate> ExerciseOrders { get; set; } = new();
+    }
+    
+    public class ExerciseOrderUpdate
+    {
+        public int SplitExerciseId { get; set; }
+        public int NewOrder { get; set; }
+    }
+    
+    public class BulkAddExercisesToSplitRequest
+    {
+        public List<AddExerciseToSplitRequest> Exercises { get; set; } = new();
+    }
+    
+    
     
     public class SplitResponse
     {

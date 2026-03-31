@@ -24,7 +24,6 @@ namespace GymTracker.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
             
-            // Fix decimal precision warnings
             modelBuilder.Entity<Exercise>()
                 .Property(e => e.DefaultWeightIncrement)
                 .HasPrecision(18, 2);
@@ -36,6 +35,18 @@ namespace GymTracker.Infrastructure.Data
             modelBuilder.Entity<NutritionLog>()
                 .Property(n => n.Carbs)
                 .HasPrecision(18, 2);
+            
+        
+    modelBuilder.Entity<User>(entity =>
+    {
+        entity.Property(e => e.Height)
+            .HasPrecision(18, 2);
+        
+        entity.Property(e => e.Weight)
+            .HasPrecision(18, 2);
+    });
+
+
             
             modelBuilder.Entity<NutritionLog>()
                 .Property(n => n.Fats)
@@ -120,7 +131,6 @@ namespace GymTracker.Infrastructure.Data
                 .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
             
-            // ✅ FIXED: One-to-one relationship between WorkoutSet and PersonalRecord
             modelBuilder.Entity<PersonalRecord>()
                 .HasOne(pr => pr.WorkoutSet)
                 .WithOne(ws => ws.PersonalRecord)
@@ -158,7 +168,6 @@ namespace GymTracker.Infrastructure.Data
                 .HasForeignKey(wg => wg.AchievedInWorkoutId)
                 .OnDelete(DeleteBehavior.SetNull);
             
-            // Indexes for performance
             modelBuilder.Entity<Exercise>()
                 .HasIndex(e => e.Name)
                 .IsUnique();
