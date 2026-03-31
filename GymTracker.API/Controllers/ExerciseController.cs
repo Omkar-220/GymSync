@@ -137,5 +137,57 @@ namespace GymTracker.API.Controllers
             
             return NoContent();
         }
+        // POST: api/exercise/bulk
+        [HttpPost("bulk")]
+        public async Task<ActionResult<IEnumerable<ExerciseResponse>>> BulkCreateExercises([FromBody] List<CreateExerciseRequest> requests)
+        {
+            if (requests == null || !requests.Any())
+                return BadRequest("No exercises provided");
+            
+            var exercises = new List<Exercise>();
+            var responses = new List<ExerciseResponse>();
+            
+            foreach (var request in requests)
+            {
+                var exercise = new Exercise
+                {
+                    Name = request.Name,
+                    MuscleGroup = request.MuscleGroup,
+                    Equipment = request.Equipment,
+                    DifficultyLevel = request.DifficultyLevel,
+                    EstimatedCaloriesPerSet = request.EstimatedCaloriesPerSet,
+                    MeasurementType = request.MeasurementType,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+                
+                exercises.Add(exercise);
+            }
+            
+            _context.Exercises.AddRange(exercises);
+            await _context.SaveChangesAsync();
+            
+            foreach (var exercise in exercises)
+            {
+                responses.Add(new ExerciseResponse
+                {
+                    Id = exercise.Id,
+                    Name = exercise.Name,
+                    MuscleGroup = exercise.MuscleGroup,
+                    Equipment = exercise.Equipment,
+                    IsActive = exercise.IsActive,
+                    CreatedAt = exercise.CreatedAt,
+                    DifficultyLevel = exercise.DifficultyLevel,
+                    EstimatedCaloriesPerSet = exercise.EstimatedCaloriesPerSet,
+                    MeasurementType = exercise.MeasurementType
+                });
+            }
+            
+            return Ok(new 
+            { 
+                Message = $"Successfully added {responses.Count} exercises",
+                Exercises = responses 
+            });
+        }
     }
 }
