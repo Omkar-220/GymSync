@@ -37,14 +37,14 @@ namespace GymTracker.Infrastructure.Data
                 .HasPrecision(18, 2);
             
         
-    modelBuilder.Entity<User>(entity =>
-    {
-        entity.Property(e => e.Height)
-            .HasPrecision(18, 2);
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.Property(e => e.Height)
+                    .HasPrecision(18, 2);
         
-        entity.Property(e => e.Weight)
-            .HasPrecision(18, 2);
-    });
+                entity.Property(e => e.Weight)
+                    .HasPrecision(18, 2);
+            });
 
 
             

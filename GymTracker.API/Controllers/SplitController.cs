@@ -125,6 +125,7 @@ namespace GymTracker.API.Controllers
         
         // POST: api/split
         [HttpPost]
+        
         public async Task<ActionResult<SplitResponse>> CreateSplit([FromBody] CreateSplitRequest request)
         {
             // Check if user exists
