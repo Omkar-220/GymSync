@@ -6,7 +6,7 @@ using GymTracker.Core.DTOs;
 
 namespace GymTracker.API.Controllers
 {
-    public class ExerciseController : BaseApiController
+    public class ExerciseController : BaseApiController // inherits from BaseApiController which is also being inherited by the ControllerBase
     {
         private readonly ApplicationDbContext _context;
         
@@ -42,7 +42,8 @@ namespace GymTracker.API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ExerciseResponse>> GetExercise(int id)
         {
-            var exercise = await _context.Exercises.FindAsync(id);
+            var exercise = await _context.Exercises.FindAsync(id); // accessing the database directly via the controller 
+            // creating the problem of tight coupling and violating the separation of concerns principle.
             
             if (exercise == null)
                 return NotFound();

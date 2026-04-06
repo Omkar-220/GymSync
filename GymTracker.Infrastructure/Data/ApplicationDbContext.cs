@@ -35,7 +35,12 @@ namespace GymTracker.Infrastructure.Data
             modelBuilder.Entity<NutritionLog>()
                 .Property(n => n.Carbs)
                 .HasPrecision(18, 2);
-            
+
+                
+            modelBuilder.Entity<NutritionLog>()
+                .Property(n => n.Magnesium)
+                .HasPrecision(18, 2);
+                        
         
             modelBuilder.Entity<User>(entity =>
             {
@@ -45,6 +50,8 @@ namespace GymTracker.Infrastructure.Data
                 entity.Property(e => e.Weight)
                     .HasPrecision(18, 2);
             });
+
+
 
 
             
@@ -59,7 +66,11 @@ namespace GymTracker.Infrastructure.Data
             modelBuilder.Entity<NutritionLog>()
                 .Property(n => n.Calories)
                 .HasPrecision(18, 2);
-            
+
+            modelBuilder.Entity<NutritionLog>()
+                .Property(n => n.Iron)
+                .HasPrecision(18, 2);
+                        
             modelBuilder.Entity<PersonalRecord>()
                 .Property(p => p.Value)
                 .HasPrecision(18, 2);
@@ -70,6 +81,18 @@ namespace GymTracker.Infrastructure.Data
             
             modelBuilder.Entity<WorkoutSet>()
                 .Property(w => w.Weight)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<NutritionLog>()
+                .Property(n => n.Fiber)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<NutritionLog>()
+                .Property(n => n.Creatine)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<NutritionLog>()
+                .Property(n => n.Omega3)
                 .HasPrecision(18, 2);
             
             modelBuilder.Entity<WorkoutGoal>()
