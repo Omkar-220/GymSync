@@ -11,8 +11,7 @@ namespace GymTracker.Core.Entities
         public decimal? Weight { get; set; }                   
         public decimal? Height { get; set; }                   
         public bool IsActive { get; set; } = true;             
-        
-            
+        public string PasswordHash { get; set; } = string.Empty;  
         public ICollection<Split> Splits { get; set; } = new List<Split>();
         public ICollection<Workout> Workouts { get; set; } = new List<Workout>();
         public ICollection<NutritionLog> NutritionLogs { get; set; } = new List<NutritionLog>();

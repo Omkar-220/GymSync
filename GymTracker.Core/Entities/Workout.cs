@@ -1,4 +1,4 @@
-using GymTracker.Core.Enums;  // ✅ ADD THIS
+using GymTracker.Core.Enums; 
 
 namespace GymTracker.Core.Entities
 {

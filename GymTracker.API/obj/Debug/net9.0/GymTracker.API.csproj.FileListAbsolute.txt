@@ -161,3 +161,5 @@ C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\obj\Debug\net9.0\ref\GymTracker.API.dll
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\bin\Debug\net9.0\AutoMapper.dll
 C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\bin\Debug\net9.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\bin\Debug\net9.0\BCrypt.Net-Next.dll
+C:\Users\omkar.vyavahare\Desktop\Module 1\Projects\GymTrackerNew\GymTracker.API\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

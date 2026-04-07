@@ -62,4 +62,33 @@ namespace GymTracker.Core.DTOs
         public bool IsActive { get; set; }
         public int TotalWorkouts { get; set; }
     }
+    public class LoginRequest
+{
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+}
+public class ChangePasswordRequest
+{
+    public string CurrentPassword { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
+}
+public class RegisterRequest
+{
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public decimal? Weight { get; set; }
+    public decimal? Height { get; set; }
+}
+
+public class AuthResponse
+{
+    public int Id { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Token { get; set; } = string.Empty;
+    public DateTime TokenExpiry { get; set; }
+}
 }

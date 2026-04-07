@@ -14,6 +14,24 @@ namespace GymTracker.API.Controllers
         {
             _context = context;
         }
+
+        
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var userId = GetCurrentUserId();  // Clean and simple!
+            
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound();
+            
+            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
+                return BadRequest("Current password is incorrect");
+            
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            await _context.SaveChangesAsync();
+            
+            return Ok(new { Message = "Password changed successfully" });
+        }
         
         // GET: api/user
         [HttpGet]
@@ -33,6 +51,7 @@ namespace GymTracker.API.Controllers
             
             return Ok(users);
         }
+
         
         // GET: api/user/5
         [HttpGet("{id}")]
