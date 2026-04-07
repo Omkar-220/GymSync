@@ -4,6 +4,7 @@ using GymTracker.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GymTracker.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260407050916_AddAchievedPropertiesToWorkoutGoal")]
+    partial class AddAchievedPropertiesToWorkoutGoal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -360,8 +363,7 @@ namespace GymTracker.Infrastructure.Migrations
                     b.Property<int?>("AchievedReps")
                         .HasColumnType("int");
 
-                    b.Property<decimal?>("AchievedValue")
-                        .HasPrecision(18, 2)
+                    b.Property<decimal?>("AchievedWeight")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -382,7 +384,7 @@ namespace GymTracker.Infrastructure.Migrations
                     b.Property<int?>("TargetReps")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TargetValue")
+                    b.Property<decimal>("TargetWeight")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 

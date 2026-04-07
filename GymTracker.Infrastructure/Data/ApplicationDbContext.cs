@@ -96,10 +96,13 @@ namespace GymTracker.Infrastructure.Data
                 .HasPrecision(18, 2);
             
             modelBuilder.Entity<WorkoutGoal>()
-                .Property(wg => wg.TargetWeight)
+                .Property(wg => wg.TargetValue)
                 .HasPrecision(18, 2);
             
-            // Configure relationships
+            modelBuilder.Entity<WorkoutGoal>()
+                .Property(wg => wg.AchievedValue)
+                .HasPrecision(18, 2);
+
             modelBuilder.Entity<Split>()
                 .HasOne(s => s.User)
                 .WithMany(u => u.Splits)

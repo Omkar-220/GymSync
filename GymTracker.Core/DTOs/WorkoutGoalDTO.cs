@@ -2,14 +2,12 @@ using GymTracker.Core.Enums;
 
 namespace GymTracker.Core.DTOs
 {
-    
-    
     public class CreateWorkoutGoalRequest
     {
         public int UserId { get; set; }
         public int TargetExerciseId { get; set; }
-        public GoalType Type { get; set; }
-        public decimal TargetWeight { get; set; }
+        public PRType Type { get; set; }
+        public decimal TargetValue { get; set; }
         public int? TargetReps { get; set; }
         public DateTime TargetDate { get; set; }
         public string? Notes { get; set; }
@@ -17,13 +15,12 @@ namespace GymTracker.Core.DTOs
     
     public class UpdateWorkoutGoalRequest
     {
-        public decimal? TargetWeight { get; set; }
+        public decimal? TargetValue { get; set; }
         public int? TargetReps { get; set; }
         public DateTime? TargetDate { get; set; }
         public bool? IsAchieved { get; set; }
         public string? Notes { get; set; }
     }
-    
     
     public class WorkoutGoalResponse
     {
@@ -32,15 +29,15 @@ namespace GymTracker.Core.DTOs
         public string Username { get; set; } = string.Empty;
         public int TargetExerciseId { get; set; }
         public string ExerciseName { get; set; } = string.Empty;
-        public GoalType Type { get; set; }
+        public PRType Type { get; set; }
         public string TypeDisplayName { get; set; } = string.Empty;
-        public decimal TargetWeight { get; set; }
+        public decimal TargetValue { get; set; }
         public int? TargetReps { get; set; }
         public DateTime TargetDate { get; set; }
         public bool IsAchieved { get; set; }
         public DateTime? AchievedAt { get; set; }
         public int? AchievedInWorkoutId { get; set; }
-        public decimal? AchievedWeight { get; set; }
+        public decimal? AchievedValue { get; set; }
         public int? AchievedReps { get; set; }
         public decimal? ProgressPercentage { get; set; }
         public string? Notes { get; set; }
@@ -51,29 +48,12 @@ namespace GymTracker.Core.DTOs
     {
         public int Id { get; set; }
         public string ExerciseName { get; set; } = string.Empty;
-        public GoalType Type { get; set; }
-        public decimal TargetWeight { get; set; }
+        public PRType Type { get; set; }
+        public string TypeDisplayName { get; set; } = string.Empty;
+        public decimal TargetValue { get; set; }
         public int? TargetReps { get; set; }
         public DateTime TargetDate { get; set; }
         public bool IsAchieved { get; set; }
         public decimal? ProgressPercentage { get; set; }
-    }
-    
-
-    
-    public static class GoalTypeExtensions
-    {
-        public static string GetDisplayName(this GoalType type)
-        {
-            return type switch
-            {
-                GoalType.Strength => "Strength",
-                GoalType.Hypertrophy => "Hypertrophy",
-                GoalType.Endurance => "Endurance",
-                GoalType.WeightLoss => "Weight Loss",
-                GoalType.BodyRecomposition => "Body Recomposition",
-                _ => type.ToString()
-            };
-        }
     }
 }

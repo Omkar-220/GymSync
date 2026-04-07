@@ -17,7 +17,7 @@ namespace GymTracker.Core.Entities
         public bool IsMeasurable { get; set; } = true;
         public MeasurementType MeasurementType { get; set; }
         
-        // Navigation properties
+        
         public ICollection<WorkoutSet> WorkoutSets { get; set; } = new List<WorkoutSet>();
         public ICollection<SplitExercise> SplitExercises { get; set; } = new List<SplitExercise>();
         public ICollection<PersonalRecord> PersonalRecords { get; set; } = new List<PersonalRecord>();
