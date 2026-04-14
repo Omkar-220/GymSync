@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\GymTracker.API.props" />
-</Project>

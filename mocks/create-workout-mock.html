@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>GymSync – Create Workout Mock</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #060608;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    .phone {
+      width: 390px; height: 844px;
+      background: #0F0F12; border-radius: 44px; overflow: hidden;
+      position: relative; display: flex; flex-direction: column;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.8), inset 0 0 0 1px #2A2A35;
+      color: #fff;
+    }
+    .screen { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 24px 16px; border-bottom: 1px solid #2A2A35; flex-shrink: 0;
+    }
+    .btn-hdr { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 700; }
+    .btn-hdr.close { color: #8B8CA8; } .btn-hdr.close:hover { color: #fff; }
+    .btn-hdr.save  { color: #10B981; } .btn-hdr.save:hover  { color: #34D399; }
+    .btn-hdr svg { width: 20px; height: 20px; }
+    header h1 { font-size: 17px; font-weight: 800; }
+
+    .scroll { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; padding: 20px; display: flex; flex-direction: column; gap: 22px; }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    .lbl { font-size: 10px; font-weight: 800; color: #8B8CA8; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; display: block; }
+    .txt-input { width: 100%; background: #1A1A24; border: 1px solid #2A2A35; border-radius: 14px; padding: 14px 16px; color: #fff; font-size: 20px; font-weight: 800; outline: none; }
+    .txt-input:focus { border-color: #6366F1; }
+
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill { padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; border: 1px solid #2A2A35; background: #1A1A24; color: #8B8CA8; cursor: pointer; transition: all .15s; }
+    .pill.active { background: rgba(99,102,241,.18); color: #6366F1; border-color: rgba(99,102,241,.5); }
+
+    .sec-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .sec-head h2 { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .sec-head h2 svg { width: 18px; height: 18px; color: #6366F1; }
+    .sec-head span { font-size: 13px; color: #8B8CA8; }
+
+    /* Exercise card */
+    .ex-card { background: #1A1A24; border: 1px solid #2A2A35; border-radius: 20px; overflow: hidden; margin-bottom: 12px; }
+    .ex-card-hdr { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; }
+    .ex-left { display: flex; align-items: center; gap: 12px; }
+    .ex-num { width: 32px; height: 32px; background: #0F0F12; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #8B8CA8; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+    .ex-name { font-size: 15px; font-weight: 800; }
+    .ex-sub  { font-size: 11px; color: #8B8CA8; text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+    .ex-actions { display: flex; align-items: center; gap: 6px; }
+
+    /* Sets stepper — lives in the card header */
+    .sets-stepper {
+      display: flex; align-items: center; gap: 5px;
+      background: #0F0F12; border: 1px solid rgba(42,42,53,.7);
+      border-radius: 8px; padding: 4px 8px;
+    }
+    .ss-btn { width: 20px; height: 20px; background: #2A2A35; border: none; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; flex-shrink: 0; }
+    .ss-btn:hover { background: #3A3A45; }
+    .ss-btn svg { width: 9px; height: 9px; }
+    .ss-val { font-size: 13px; font-weight: 800; min-width: 14px; text-align: center; }
+    .ss-lbl { font-size: 10px; color: #8B8CA8; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; }
+
+    .btn-ghost { background: none; border: none; cursor: pointer; padding: 4px; color: #8B8CA8; transition: color .15s; display: flex; }
+    .btn-ghost:hover { color: #fff; }
+    .btn-ghost.del:hover { color: #EF4444; }
+    .btn-ghost svg { width: 18px; height: 18px; }
+
+    /* Expanded body */
+    .ex-body { padding: 0 16px 16px; }
+    .ex-card.collapsed .ex-body { display: none; }
+
+    /* Per-set table */
+    .set-table { border: 1px solid rgba(42,42,53,.5); border-radius: 14px; overflow: hidden; }
+    .set-thead { display: grid; grid-template-columns: 26px 1fr 1fr; background: #0B0B0F; padding: 7px 12px; border-bottom: 1px solid rgba(42,42,53,.5); }
+    .set-thead span { font-size: 9px; color: #8B8CA8; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    .set-thead span:not(:first-child) { text-align: center; }
+    .set-row { display: grid; grid-template-columns: 26px 1fr 1fr; align-items: center; padding: 7px 12px; gap: 6px; }
+    .set-row:nth-child(odd)  { background: #0F0F12; }
+    .set-row:nth-child(even) { background: #111118; }
+    .set-row:not(:last-child) { border-bottom: 1px solid rgba(42,42,53,.3); }
+    .set-n { font-size: 12px; font-weight: 800; color: #8B8CA8; }
+    .cell { display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .cell-btn { width: 22px; height: 22px; background: #2A2A35; border: none; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; flex-shrink: 0; }
+    .cell-btn:hover { background: #3A3A45; }
+    .cell-btn svg { width: 9px; height: 9px; }
+    .cell-val { font-size: 13px; font-weight: 800; min-width: 34px; text-align: center; font-variant-numeric: tabular-nums; }
+
+    .btn-add { width: 100%; padding: 16px; border: 2px dashed #2A2A35; border-radius: 20px; background: none; color: #8B8CA8; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; transition: border-color .15s, color .15s; }
+    .btn-add:hover { border-color: #6366F1; color: #6366F1; }
+    .btn-add svg { width: 22px; height: 22px; }
+  </style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+
+  <header>
+    <button class="btn-hdr close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <h1>Plan Monday</h1>
+    <button class="btn-hdr save">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Save
+    </button>
+  </header>
+
+  <div class="scroll">
+
+    <div>
+      <span class="lbl">Workout Name</span>
+      <input class="txt-input" type="text" value="Push Day" />
+    </div>
+
+    <div>
+      <span class="lbl">Training Style</span>
+      <div class="pills">
+        <button class="pill active" onclick="setPill(this)">Hypertrophy</button>
+        <button class="pill" onclick="setPill(this)">Strength</button>
+        <button class="pill" onclick="setPill(this)">Endurance</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-head">
+        <h2>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.4 14.4 9.6 9.6"/>
+            <path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/>
+            <path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/>
+            <path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>
+          </svg>
+          Exercises
+        </h2>
+        <span id="ex-count">2 total</span>
+      </div>
+
+      <div id="ex-list"></div>
+
+      <button class="btn-add">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Exercise
+      </button>
+    </div>
+
+  </div>
+</div></div>
+
+<script>
+const PLUS  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+const MINUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+const CHEVUP = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`;
+const CHEVDN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+const TRASH  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
+
+const exercises = [
+  { id: 1, name: 'Barbell Bench Press', muscle: 'Chest',     expanded: true,
+    sets: [{w:60,r:12},{w:35,r:12},{w:30,r:12},{w:37.5,r:10}] },
+  { id: 2, name: 'Overhead Press',      muscle: 'Shoulders', expanded: false,
+    sets: [{w:40,r:10},{w:42.5,r:10},{w:45,r:8}] },
+];
+
+function buildRowsHTML(ex) {
+  return ex.sets.map((s, si) => `
+    <div class="set-row">
+      <span class="set-n">${si+1}</span>
+      <div class="cell">
+        <button class="cell-btn" onclick="adjSet(${ex.id},${si},'w',-1)">${MINUS}</button>
+        <span class="cell-val" id="w-${ex.id}-${si}">${s.w}</span>
+        <button class="cell-btn" onclick="adjSet(${ex.id},${si},'w',1)">${PLUS}</button>
+      </div>
+      <div class="cell">
+        <button class="cell-btn" onclick="adjSet(${ex.id},${si},'r',-1)">${MINUS}</button>
+        <span class="cell-val" id="r-${ex.id}-${si}">${s.r}</span>
+        <button class="cell-btn" onclick="adjSet(${ex.id},${si},'r',1)">${PLUS}</button>
+      </div>
+    </div>`).join('');
+}
+
+function render() {
+  const list = document.getElementById('ex-list');
+  list.innerHTML = '';
+  exercises.forEach((ex, ei) => {
+    const card = document.createElement('div');
+    card.className = 'ex-card' + (ex.expanded ? '' : ' collapsed');
+    card.id = 'card-' + ex.id;
+    card.innerHTML = `
+      <div class="ex-card-hdr">
+        <div class="ex-left">
+          <div class="ex-num">${ei+1}</div>
+          <div>
+            <div class="ex-name">${ex.name}</div>
+            <div class="ex-sub">${ex.muscle}</div>
+          </div>
+        </div>
+        <div class="ex-actions">
+          <div class="sets-stepper">
+            <button class="ss-btn" onclick="adjSets(${ex.id},-1)">${MINUS}</button>
+            <span class="ss-val" id="sc-${ex.id}">${ex.sets.length}</span>
+            <button class="ss-btn" onclick="adjSets(${ex.id},1)">${PLUS}</button>
+            <span class="ss-lbl">sets</span>
+          </div>
+          <button class="btn-ghost" onclick="toggleCard(${ex.id})" id="chev-${ex.id}">${ex.expanded ? CHEVUP : CHEVDN}</button>
+          <button class="btn-ghost del" onclick="removeEx(${ex.id})">${TRASH}</button>
+        </div>
+      </div>
+      <div class="ex-body">
+        <div class="set-table">
+          <div class="set-thead">
+            <span>Set</span><span>Weight (kg)</span><span>Reps</span>
+          </div>
+          <div id="rows-${ex.id}">${buildRowsHTML(ex)}</div>
+        </div>
+      </div>`;
+    list.appendChild(card);
+  });
+  document.getElementById('ex-count').textContent = exercises.length + ' total';
+}
+
+function setPill(el) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleCard(id) {
+  const ex = exercises.find(e => e.id === id);
+  ex.expanded = !ex.expanded;
+  document.getElementById('card-'+id).classList.toggle('collapsed', !ex.expanded);
+  document.getElementById('chev-'+id).innerHTML = ex.expanded ? CHEVUP : CHEVDN;
+}
+
+function removeEx(id) {
+  exercises.splice(exercises.findIndex(e => e.id === id), 1);
+  render();
+}
+
+function adjSets(id, dir) {
+  const ex = exercises.find(e => e.id === id);
+  if (dir > 0) {
+    const lastW = ex.sets.length ? ex.sets[ex.sets.length-1].w : 20;
+    ex.sets.push({ w: lastW, r: 10 });
+  } else if (ex.sets.length > 1) {
+    ex.sets.pop();
+  }
+  document.getElementById('sc-'+id).textContent = ex.sets.length;
+  document.getElementById('rows-'+id).innerHTML = buildRowsHTML(ex);
+}
+
+function adjSet(id, si, field, dir) {
+  const ex = exercises.find(e => e.id === id);
+  const s = ex.sets[si];
+  if (field === 'w') {
+    s.w = Math.max(0, +((s.w + dir * 2.5).toFixed(1)));
+    document.getElementById('w-'+id+'-'+si).textContent = s.w;
+  } else {
+    s.r = Math.max(1, s.r + dir);
+    document.getElementById('r-'+id+'-'+si).textContent = s.r;
+  }
+}
+
+render();
+</script>
+</body>
+</html>

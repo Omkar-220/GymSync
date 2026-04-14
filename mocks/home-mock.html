@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>GymSync – Home Mock</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #060608;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    /* Phone shell */
+    .phone { 
+      width: 390px;
+      height: 844px;
+      background: #0F0F12;
+      border-radius: 44px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.8), inset 0 0 0 1px #2A2A35;
+    }
+    .screen {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px 16px;
+      background: rgba(15,15,18,0.92);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid #1E1E28;
+    }
+    .logo { display: flex; align-items: center; gap: 8px; color: #6366F1; }
+    .logo svg { width: 28px; height: 28px; }
+    .logo-text { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+
+    .btn-icon {
+      width: 38px; height: 38px;
+      background: #1A1A24;
+      border: 1px solid #2A2A35;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #8B8CA8;
+      cursor: pointer;
+      transition: color .2s, border-color .2s;
+    }
+    .btn-icon:hover { color: #6366F1; border-color: #6366F1; }
+    .btn-icon svg { width: 18px; height: 18px; }
+
+    /* ── Bottom Nav ── */
+    .bottom-nav {
+      flex-shrink: 0;
+      height: 68px;
+      background: rgba(24,24,32,.97);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid #2A2A35;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px;
+      z-index: 50;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px;
+      width: 60px; height: 100%;
+      color: #8B8CA8;
+      cursor: pointer;
+      transition: color .2s;
+      text-decoration: none;
+      border: none; background: none;
+    }
+    .nav-item:hover { color: #fff; }
+    .nav-item.active { color: #5C5CFF; }
+    .nav-item svg { width: 22px; height: 22px; }
+    .nav-label { font-size: 10px; font-weight: 600; }
+
+    /* ── Scrollable middle ── */
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+      padding-bottom: 8px;
+    }
+    .scroll-area::-webkit-scrollbar { display: none; }
+
+    /* ── Content ── */
+    .content { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* Day card */
+    .day-card {
+      background: #1A1A24;
+      border: 1px solid #2A2A35;
+      border-radius: 20px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .day-card::before {
+      content: '';
+      position: absolute;
+      top: -20px; right: -20px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(99,102,241,.15), transparent 70%);
+      pointer-events: none;
+    }
+    .day-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .day-label { font-size: 11px; color: #8B8CA8; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+    .day-title { font-size: 24px; font-weight: 800; color: #fff; }
+    .day-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .badge-hyp {
+      background: rgba(99,102,241,.18);
+      color: #6366F1;
+      font-size: 10px; font-weight: 800;
+      padding: 4px 10px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .btn-edit {
+      font-size: 11px; color: #8B8CA8;
+      background: #2A2A35; border: none;
+      padding: 4px 8px; border-radius: 6px;
+      cursor: pointer; transition: color .2s;
+    }
+    .btn-edit:hover { color: #fff; }
+    .day-meta { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #8B8CA8; }
+    .dot { width: 4px; height: 4px; background: #8B8CA8; border-radius: 50%; }
+
+    /* Weekly split button */
+    .split-btn {
+      width: 100%;
+      background: #1A1A24;
+      border: 1px solid #2A2A35;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: background .2s, border-color .2s;
+      text-align: left;
+    }
+    .split-btn:hover { background: #2A2A35; border-color: #3A3A45; }
+    .split-btn-left { display: flex; align-items: center; gap: 12px; }
+    .split-icon {
+      width: 40px; height: 40px;
+      background: rgba(99,102,241,.12);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: #6366F1;
+    }
+    .split-icon svg { width: 20px; height: 20px; }
+    .split-title { font-size: 15px; font-weight: 700; color: #fff; }
+    .split-sub { font-size: 12px; color: #8B8CA8; margin-top: 2px; }
+    .chevron { color: #4A4A5C; }
+    .chevron svg { width: 18px; height: 18px; }
+
+    /* Exercise list */
+    .section-title { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .exercise-list { display: flex; flex-direction: column; gap: 10px; }
+    .exercise-row {
+      display: flex; align-items: center;
+      background: rgba(26,26,36,.6);
+      border: 1px solid #2A2A35;
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+    .ex-num {
+      width: 36px; height: 36px;
+      background: #0F0F12;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: #8B8CA8; font-weight: 700; font-size: 14px;
+      margin-right: 12px; flex-shrink: 0;
+    }
+    .ex-info { flex: 1; min-width: 0; }
+    .ex-name { font-weight: 700; color: #fff; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ex-sub { font-size: 12px; color: #8B8CA8; margin-top: 2px; }
+    .btn-play {
+      width: 32px; height: 32px;
+      background: #2A2A35; border: none; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #8B8CA8; cursor: pointer; margin-left: 10px; flex-shrink: 0;
+    }
+    .btn-play svg { width: 14px; height: 14px; margin-left: 2px; }
+
+    /* ── CHANGE 1: Bottom action area – CUSTOM WORKOUT & SKIP moved into header area ── */
+    /* START WORKOUT stays as the big CTA at the bottom */
+    .bottom-cta {
+      padding: 12px 20px 16px;
+      background: linear-gradient(to top, #0F0F12 80%, transparent);
+      flex-shrink: 0;
+      z-index: 20;
+    }
+    .btn-start {
+      width: 100%;
+      background: #5C5CFF;
+      color: #fff;
+      font-size: 17px; font-weight: 800;
+      padding: 16px;
+      border: none; border-radius: 18px;
+      cursor: pointer;
+      box-shadow: 0 0 24px rgba(92,92,255,.35);
+      transition: background .2s, transform .1s;
+      letter-spacing: .04em;
+    }
+    .btn-start:active { transform: scale(.97); }
+    .btn-start:hover { background: #4B4BFF; }
+
+    /* ── CHANGE 1: CUSTOM WORKOUT + SKIP WORKOUT moved to header row below logo ── */
+    .sub-header {
+      display: flex;
+      gap: 8px;
+      padding: 8px 20px 12px;
+      background: rgba(15,15,18,.92);
+      backdrop-filter: blur(12px);
+    }
+    .btn-sub {
+      flex: 1;
+      background: #181820;
+      border: 1px solid #2A2A35;
+      color: #8B8CA8;
+      font-size: 11px; font-weight: 800;
+      padding: 8px 4px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .btn-sub:hover { background: #2A2A35; color: #fff; }
+    .btn-sub.custom { color: #6366F1; border-color: rgba(99,102,241,.3); }
+    .btn-sub.custom:hover { background: rgba(99,102,241,.1); color: #818CF8; }
+
+
+
+
+  </style>
+</head>
+<body>
+<div class="phone">
+  <div class="screen">
+
+    <!-- Header -->
+    <header>
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.4 14.4 9.6 9.6"/>
+          <path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/>
+          <path d="m21.5 21.5-1.4-1.4"/>
+          <path d="M3.9 3.9 2.5 2.5"/>
+          <path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>
+        </svg>
+        <span class="logo-text">GymSync</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon" title="Profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- CHANGE 1: CUSTOM WORKOUT + SKIP WORKOUT moved here, below header, above content -->
+    <div class="sub-header">
+      <button class="btn-sub custom">✦ Custom Workout</button>
+      <button class="btn-sub">Skip Workout</button>
+    </div>
+
+    <!-- Scrollable area -->
+    <div class="scroll-area">
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Today's Day Card -->
+      <div class="day-card">
+        <div class="day-card-top">
+          <div>
+            <div class="day-label">Today's Workout</div>
+            <div class="day-title">Push Day</div>
+          </div>
+          <div class="day-badges">
+            <span class="badge-hyp">Hypertrophy</span>
+            <button class="btn-edit">Edit</button>
+          </div>
+        </div>
+        <div class="day-meta">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B8CA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.4 14.4 9.6 9.6"/>
+            <path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/>
+            <path d="m21.5 21.5-1.4-1.4"/>
+            <path d="M3.9 3.9 2.5 2.5"/>
+            <path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>
+          </svg>
+          <span>5 Exercises</span>
+          <div class="dot"></div>
+          <span>~65 mins</span>
+        </div>
+      </div>
+
+      <!-- Manage Weekly Split -->
+      <button class="split-btn">
+        <div class="split-btn-left">
+          <div class="split-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div>
+            <div class="split-title">Manage Weekly Split</div>
+            <div class="split-sub">Configure your 7-day routine</div>
+          </div>
+        </div>
+        <div class="chevron">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </button>
+
+      <!-- Plan for today -->
+      <div>
+        <div class="section-title">Plan for today</div>
+        <div class="exercise-list" id="exerciseList">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+
+    </div><!-- /content -->
+    </div><!-- /scroll-area -->
+
+    <!-- START WORKOUT – sole CTA at bottom -->
+    <div class="bottom-cta">
+      <button class="btn-start">START WORKOUT</button>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+    <button class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>
+      </svg>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+        <path d="M12 7v5l4 2"/>
+      </svg>
+      <span class="nav-label">History</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>
+      </svg>
+      <span class="nav-label">Nutrition</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+        <polyline points="16 7 22 7 22 13"/>
+      </svg>
+      <span class="nav-label">Progress</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span class="nav-label">Profile</span>
+    </button>
+    </nav>
+  </div><!-- /screen -->
+</div><!-- /phone -->
+
+<script>
+  const EXERCISES = [
+    { id: 1, name: 'Barbell Bench Press', muscle: 'Chest', target: '4 sets × 8-10 reps' },
+    { id: 2, name: 'Overhead Press',       muscle: 'Shoulders', target: '3 sets × 8-12 reps' },
+    { id: 3, name: 'Incline DB Press',     muscle: 'Chest', target: '3 sets × 10-12 reps' },
+    { id: 4, name: 'Tricep Pushdown',      muscle: 'Triceps', target: '3 sets × 12-15 reps' },
+    { id: 5, name: 'Lateral Raises',       muscle: 'Shoulders', target: '4 sets × 15-20 reps' },
+  ];
+
+  // Render exercise list
+  const list = document.getElementById('exerciseList');
+  EXERCISES.forEach((ex, idx) => {
+    list.innerHTML += `
+      <div class="exercise-row">
+        <div class="ex-num">${idx + 1}</div>
+        <div class="ex-info">
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-sub">${ex.muscle} · ${ex.target}</div>
+        </div>
+        <button class="btn-play">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+      </div>`;
+  });
+
+
+</script>
+</body>
+</html>
