@@ -60,10 +60,34 @@ namespace GymTracker.API.Controllers
             var user = await _context.Users
                 .Include(u => u.Workouts)
                 .Include(u => u.PersonalRecords)
+                .Include(u => u.WorkoutSets)
                 .FirstOrDefaultAsync(u => u.Id == id);
             
             if (user == null)
                 return NotFound();
+
+            // Calculate streak — consecutive completed non-skipped days going back from today
+            var completedDates = user.Workouts
+                .Where(w => w.IsCompleted && !w.IsSkipped)
+                .Select(w => w.WorkoutDate.Date)
+                .Distinct()
+                .OrderByDescending(d => d)
+                .ToList();
+
+            int streak = 0;
+            var checkDate = DateTime.UtcNow.Date;
+            // Allow today or yesterday as the streak start
+            if (completedDates.Contains(checkDate)) { /* today counts */ }
+            else checkDate = checkDate.AddDays(-1);
+
+            foreach (var date in completedDates.OrderByDescending(d => d))
+            {
+                if (date == checkDate) { streak++; checkDate = checkDate.AddDays(-1); }
+                else if (date < checkDate) break;
+            }
+
+            var totalVolume = user.WorkoutSets.Sum(ws => ws.Weight * ws.Reps);
+            var totalWorkouts = user.Workouts.Count(w => w.IsCompleted && !w.IsSkipped);
             
             return Ok(new UserResponse
             {
@@ -82,11 +106,11 @@ namespace GymTracker.API.Controllers
                     : null,
                 Statistics = new UserStatistics
                 {
-                    TotalWorkouts = user.Workouts.Count,
+                    TotalWorkouts = totalWorkouts,
                     TotalWorkoutSets = user.WorkoutSets.Count,
-                    TotalVolume = user.WorkoutSets.Sum(ws => ws.Weight * ws.Reps),
+                    TotalVolume = totalVolume,
                     PersonalRecordsCount = user.PersonalRecords.Count,
-                    CurrentStreak = 0, // Calculate later
+                    CurrentStreak = streak,
                     LastWorkoutDate = user.Workouts.Max(w => (DateTime?)w.WorkoutDate)
                 }
             });

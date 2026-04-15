@@ -26,12 +26,14 @@ namespace GymTracker.Core.DTOs
         public int ExerciseId { get; set; }
         public int Order { get; set; }
         public int? DefaultSets { get; set; }
+        public int? DefaultReps { get; set; }
     }
     
     public class UpdateSplitExerciseRequest
     {
         public int? Order { get; set; }
         public int? DefaultSets { get; set; }
+        public int? DefaultReps { get; set; }
         public bool? IsActive { get; set; }
     }
     
@@ -71,5 +73,6 @@ namespace GymTracker.Core.DTOs
         public string MuscleGroup { get; set; } = string.Empty;
         public int Order { get; set; }
         public int? DefaultSets { get; set; }
+        public int? DefaultReps { get; set; }
     }
 }

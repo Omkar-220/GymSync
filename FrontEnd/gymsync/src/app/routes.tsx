@@ -12,6 +12,7 @@ import { Progress } from "./pages/Progress";
 import { Nutrition } from "./pages/Nutrition";
 import { LogNutrition } from "./pages/LogNutrition";
 import { Login } from "./pages/Login";
+import { SkipWorkout } from "./pages/SkipWorkout";
 import { useAuth } from "../lib/AuthContext";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
       { path: "nutrition", Component: Nutrition },
       { path: "nutrition/log", Component: LogNutrition },
       { path: "profile", Component: Profile },
+      { path: "skip", Component: SkipWorkout },
     ],
   },
 ]);

@@ -1,4 +1,4 @@
-using GymTracker.Core.Enums; 
+using GymTracker.Core.Enums;
 
 namespace GymTracker.Core.Entities
 {
@@ -9,15 +9,16 @@ namespace GymTracker.Core.Entities
         public DateTime WorkoutDate { get; set; } = DateTime.UtcNow;
         public int? SplitId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public bool IsCompleted { get; set; } = false;
-        public DateTime? CompletedAt { get; set; }      
-        public int? DurationMinutes { get; set; }       
-        public int? Rating { get; set; }                
-        public string? Notes { get; set; }              
-        // public PRType Type { get; set; } 
+        public bool IsCompleted { get; set; } = falsee;
+        public bool IsSkipped { get; set; } = false;e
+        public DateTime? CompletedAt { get; set; }      // set when IsCompleted = true
+        public int? DurationMinutes { get; set; }       // in minutes
+        public int? Rating { get; set; }                // RPE 1-10
+        public string? Notes { get; set; }
+
         public User User { get; set; } = null!;
-        public Split Split { get; set; } = null!;
+        public Split? Split { get; set; }               // nullable — custom workouts have no split
         public ICollection<WorkoutSet> WorkoutSets { get; set; } = new List<WorkoutSet>();
-        public ICollection<WorkoutGoal> AchievedGoals { get; set; } = new List<WorkoutGoal>(); 
+        public ICollection<WorkoutGoal> AchievedGoals { get; set; } = new List<WorkoutGoal>();
     }
 }

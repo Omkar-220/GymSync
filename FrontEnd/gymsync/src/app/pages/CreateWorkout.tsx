@@ -1,55 +1,89 @@
-import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check, Plus, Trash2, Search, Dumbbell, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import { toast } from 'sonner';
 import clsx from 'clsx';
+import { useAuth } from '../../lib/AuthContext';
+import api from '../../lib/api';
 
-const EXERCISE_DB = [
-  { id: 'e1', name: 'Barbell Bench Press', muscle: 'Chest' },
-  { id: 'e2', name: 'Incline Dumbbell Press', muscle: 'Chest' },
-  { id: 'e3', name: 'Squat', muscle: 'Legs' },
-  { id: 'e4', name: 'Leg Press', muscle: 'Legs' },
-  { id: 'e5', name: 'Deadlift', muscle: 'Back' },
-  { id: 'e6', name: 'Pull-ups', muscle: 'Back' },
-  { id: 'e7', name: 'Overhead Press', muscle: 'Shoulders' },
-  { id: 'e8', name: 'Lateral Raises', muscle: 'Shoulders' },
-  { id: 'e9', name: 'Bicep Curls', muscle: 'Arms' },
-  { id: 'e10', name: 'Tricep Pushdown', muscle: 'Arms' },
+const TRAINING_STYLES = [
+  { label: 'Hypertrophy', value: 1 },
+  { label: 'PowerLifting', value: 0 },
+  { label: 'Endurance', value: 2 },
 ];
 
-const TRAINING_STYLES = ['Hypertrophy', 'Strength', 'Endurance'];
-
-type SetRow = { weight: number; reps: number };
+type SetRow  = { reps: number };
 type Exercise = {
-  id: string; refId: string; name: string; muscle: string;
+  id: string; refId: number; name: string; muscle: string;
   setRows: SetRow[]; expanded: boolean;
 };
+type ExerciseOption = { id: number; name: string; muscleGroup: string };
 
 export function CreateWorkout() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const dayParam = searchParams.get('day');
-  const splitParam = searchParams.get('split');
-  const typeParam = searchParams.get('type');
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const { user }  = useAuth();
 
-  const [workoutName, setWorkoutName] = useState(
-    splitParam && splitParam !== 'Rest Day' ? splitParam : 'New Split Day'
-  );
+  // Route state from WeeklySplit
+  const splitId: number | null   = location.state?.splitId ?? null;
+  const dayName: string          = location.state?.dayName ?? '';
+  const splitName: string        = location.state?.splitName ?? 'New Workout';
+  const splitType: string        = location.state?.splitType ?? 'Hypertrophy';
+  const returnTo: string         = location.state?.returnTo ?? 'split'; // 'home' | 'split'
+
+  const [workoutName, setWorkoutName]     = useState(splitName !== 'Rest Day' ? splitName : 'New Workout');
   const [trainingStyle, setTrainingStyle] = useState(
-    typeParam && typeParam !== '' ? typeParam : 'Hypertrophy'
+    TRAINING_STYLES.find(s => s.label === splitType)?.value ?? 1
   );
-  const [exercises, setExercises] = useState<Exercise[]>([{
-    id: '1', refId: 'e1', name: 'Barbell Bench Press', muscle: 'Chest',
-    setRows: [{ weight: 60, reps: 10 }, { weight: 62.5, reps: 10 }, { weight: 65, reps: 10 }, { weight: 67.5, reps: 10 }],
-    expanded: true,
-  }]);
+  const [exercises, setExercises]         = useState<Exercise[]>([]);
+  const [exerciseOptions, setExerciseOptions] = useState<ExerciseOption[]>([]);
   const [isAddingExercise, setIsAddingExercise] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery]     = useState('');
+  const [saving, setSaving]               = useState(false);
+  const [loading, setLoading]             = useState(true);
 
-  const addExercise = (ex: typeof EXERCISE_DB[0]) => {
+  // Fetch real exercises from DB + load existing split exercises if editing
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        // Always fetch the exercise library
+        const exRes = await api.get('/exercise');
+        setExerciseOptions(exRes.data);
+
+        // If editing an existing split, load its exercises
+        if (splitId) {
+          const splitRes = await api.get(`/split/${splitId}`);
+          const split = splitRes.data;
+          setWorkoutName(split.tag || splitName);
+          setTrainingStyle(split.trainingStyle);
+          if (split.exercises?.length > 0) {
+            setExercises(split.exercises.map((e: any) => ({
+              id:      String(e.id),
+              refId:   e.exerciseId,
+              name:    e.exerciseName,
+              muscle:  e.muscleGroup,
+              expanded: false,
+              setRows: Array.from({ length: e.defaultSets ?? 3 }, () => ({ reps: e.defaultReps ?? 10 })),
+            })));
+          }
+        }
+      } catch {
+        toast.error('Failed to load exercises');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
+  }, [splitId]);
+
+  const addExercise = (ex: ExerciseOption) => {
     setExercises(prev => [...prev, {
-      id: Math.random().toString(), refId: ex.id, name: ex.name, muscle: ex.muscle,
-      setRows: [{ weight: 20, reps: 10 }, { weight: 20, reps: 10 }, { weight: 20, reps: 10 }],
+      id:      Math.random().toString(),
+      refId:   ex.id,
+      name:    ex.name,
+      muscle:  ex.muscleGroup,
+      setRows: [{ reps: 10 }, { reps: 10 }, { reps: 10 }],
       expanded: true,
     }]);
     setIsAddingExercise(false);
@@ -66,31 +100,76 @@ export function CreateWorkout() {
     setExercises(prev => prev.map(e => {
       if (e.id !== id) return e;
       const rows = [...e.setRows];
-      if (delta > 0) {
-        const lastW = rows.length ? rows[rows.length - 1].weight : 20;
-        rows.push({ weight: lastW, reps: 10 });
-      } else if (rows.length > 1) {
-        rows.pop();
-      }
+      if (delta > 0) rows.push({ reps: 10 });
+      else if (rows.length > 1) rows.pop();
       return { ...e, setRows: rows };
     }));
   };
 
-  const updateSetRow = (exId: string, i: number, field: 'weight' | 'reps', delta: number) => {
+  const updateSetRow = (exId: string, i: number, delta: number) => {
     setExercises(prev => prev.map(e => {
       if (e.id !== exId) return e;
-      const step = field === 'weight' ? 2.5 : 1;
-      const min  = field === 'weight' ? 0 : 1;
       const rows = e.setRows.map((r, idx) =>
-        idx === i ? { ...r, [field]: Math.max(min, +(r[field] + delta * step).toFixed(1)) } : r
+        idx === i ? { reps: Math.max(1, r.reps + delta) } : r
       );
       return { ...e, setRows: rows };
     }));
   };
 
-  const filteredExercises = EXERCISE_DB.filter(e =>
+  const handleSave = async () => {
+    if (!user || saving) return;
+    setSaving(true);
+    try {
+      let targetSplitId = splitId;
+
+      // 1. Create split if it doesn't exist yet
+      if (!targetSplitId) {
+        const dow = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+          .indexOf(dayName);
+        const res = await api.post('/split', {
+          userId:        user.id,
+          dayOfWeek:     dow >= 0 ? dow : 1,
+          tag:           workoutName,
+          trainingStyle: trainingStyle,
+        });
+        targetSplitId = res.data.id;
+      } else {
+        // Update split name/style
+        await api.put(`/split/${targetSplitId}`, {
+          tag:           workoutName,
+          trainingStyle: trainingStyle,
+        });
+        // Remove all existing exercises first
+        const existing = await api.get(`/split/${targetSplitId}`);
+        for (const ex of existing.data.exercises) {
+          await api.delete(`/split/${targetSplitId}/exercises/${ex.id}`);
+        }
+      }
+
+      // 2. Bulk add exercises
+      if (exercises.length > 0) {
+        await api.post(`/split/${targetSplitId}/exercises/bulk`, {
+          exercises: exercises.map((ex, i) => ({
+            exerciseId:  ex.refId,
+            order:       i + 1,
+            defaultSets: ex.setRows.length,
+            defaultReps: ex.setRows[0]?.reps ?? 10,
+          })),
+        });
+      }
+
+      toast.success('Split saved!');
+      navigate(returnTo === 'home' ? '/' : '/split');
+    } catch {
+      toast.error('Failed to save split');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const filteredOptions = exerciseOptions.filter(e =>
     e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    e.muscle.toLowerCase().includes(searchQuery.toLowerCase())
+    e.muscleGroup.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -99,10 +178,11 @@ export function CreateWorkout() {
         <button onClick={() => navigate(-1)} className="text-[#8B8CA8] hover:text-white transition-colors p-2 -ml-2">
           <X className="w-6 h-6" />
         </button>
-        <h1 className="text-lg font-bold">{dayParam ? `Plan ${dayParam}` : 'Plan Workout'}</h1>
-        <button onClick={() => navigate(-1)} className="text-[#10B981] hover:text-[#34D399] transition-colors p-2 -mr-2 flex items-center gap-1 font-semibold">
+        <h1 className="text-lg font-bold">{dayName ? `Plan ${dayName}` : 'Plan Workout'}</h1>
+        <button onClick={handleSave} disabled={saving}
+          className="text-[#10B981] hover:text-[#34D399] disabled:opacity-50 transition-colors p-2 -mr-2 flex items-center gap-1 font-semibold">
           <Check className="w-5 h-5" />
-          Save
+          {saving ? 'Saving...' : 'Save'}
         </button>
       </header>
 
@@ -111,23 +191,21 @@ export function CreateWorkout() {
         <div className="space-y-5">
           <div>
             <label className="text-xs font-bold text-[#8B8CA8] uppercase tracking-widest mb-2 block">Workout Name</label>
-            <input
-              type="text" value={workoutName} onChange={e => setWorkoutName(e.target.value)}
+            <input type="text" value={workoutName} onChange={e => setWorkoutName(e.target.value)}
               className="w-full bg-[#1A1A24] border border-[#2A2A35] rounded-xl px-4 py-4 text-white text-xl font-bold focus:outline-none focus:border-[#6366F1] transition-colors"
-              placeholder="e.g. Pull Day"
-            />
+              placeholder="e.g. Pull Day" />
           </div>
           <div>
             <label className="text-xs font-bold text-[#8B8CA8] uppercase tracking-widest mb-2 block">Training Style</label>
             <div className="flex flex-wrap gap-2">
               {TRAINING_STYLES.map(style => (
-                <button key={style} onClick={() => setTrainingStyle(style)}
+                <button key={style.value} onClick={() => setTrainingStyle(style.value)}
                   className={clsx('px-4 py-2 rounded-full text-sm font-semibold transition-colors border',
-                    trainingStyle === style
+                    trainingStyle === style.value
                       ? 'bg-[#6366F1]/20 text-[#6366F1] border-[#6366F1]/50'
                       : 'bg-[#1A1A24] text-[#8B8CA8] border-[#2A2A35] hover:text-white'
                   )}>
-                  {style}
+                  {style.label}
                 </button>
               ))}
             </div>
@@ -152,7 +230,6 @@ export function CreateWorkout() {
                   exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
                   className="bg-[#1A1A24] border border-[#2A2A35] rounded-2xl overflow-hidden"
                 >
-                  {/* Card header */}
                   <div className="flex justify-between items-center p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-[#0F0F12] rounded-lg flex items-center justify-center text-[#8B8CA8] font-bold text-sm">
@@ -164,7 +241,6 @@ export function CreateWorkout() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* Sets stepper */}
                       <div className="flex items-center gap-1.5 bg-[#0F0F12] border border-[#2A2A35]/60 rounded-lg px-2 py-1">
                         <button onClick={() => changeSetCount(ex.id, -1)} className="w-5 h-5 bg-[#2A2A35] rounded flex items-center justify-center hover:bg-[#3A3A45] active:scale-95">
                           <Minus className="w-2.5 h-2.5" />
@@ -192,42 +268,22 @@ export function CreateWorkout() {
                         className="overflow-hidden"
                       >
                         <div className="px-4 pb-4">
-                          {/* Per-set table */}
                           <div className="rounded-xl overflow-hidden border border-[#2A2A35]/50">
-                            <div className="grid grid-cols-[28px_1fr_1fr] bg-[#0B0B0F] px-3 py-2 border-b border-[#2A2A35]/50">
+                            <div className="grid grid-cols-[28px_1fr] bg-[#0B0B0F] px-3 py-2 border-b border-[#2A2A35]/50">
                               <span className="text-[9px] text-[#8B8CA8] font-bold uppercase">Set</span>
-                              <span className="text-[9px] text-[#8B8CA8] font-bold uppercase text-center">Weight (kg)</span>
                               <span className="text-[9px] text-[#8B8CA8] font-bold uppercase text-center">Reps</span>
                             </div>
                             {ex.setRows.map((row, i) => (
-                              <div key={i}
-                                className={clsx(
-                                  'grid grid-cols-[28px_1fr_1fr] items-center px-3 py-2 gap-2',
-                                  i % 2 === 0 ? 'bg-[#0F0F12]' : 'bg-[#111118]',
-                                  i < ex.setRows.length - 1 && 'border-b border-[#2A2A35]/30'
-                                )}>
+                              <div key={i} className={clsx(
+                                'grid grid-cols-[28px_1fr] items-center px-3 py-2 gap-2',
+                                i % 2 === 0 ? 'bg-[#0F0F12]' : 'bg-[#111118]',
+                                i < ex.setRows.length - 1 && 'border-b border-[#2A2A35]/30'
+                              )}>
                                 <span className="text-[#8B8CA8] font-bold text-xs">{i + 1}</span>
                                 <div className="flex items-center justify-center gap-1.5">
-                                  <button onClick={() => updateSetRow(ex.id, i, 'weight', -1)}
-                                    className="w-6 h-6 bg-[#2A2A35] rounded-md flex items-center justify-center active:scale-95 shrink-0">
-                                    <Minus className="w-2.5 h-2.5" />
-                                  </button>
-                                  <span className="font-bold text-white text-sm w-10 text-center tabular-nums">{row.weight}</span>
-                                  <button onClick={() => updateSetRow(ex.id, i, 'weight', 1)}
-                                    className="w-6 h-6 bg-[#2A2A35] rounded-md flex items-center justify-center active:scale-95 shrink-0">
-                                    <Plus className="w-2.5 h-2.5" />
-                                  </button>
-                                </div>
-                                <div className="flex items-center justify-center gap-1.5">
-                                  <button onClick={() => updateSetRow(ex.id, i, 'reps', -1)}
-                                    className="w-6 h-6 bg-[#2A2A35] rounded-md flex items-center justify-center active:scale-95 shrink-0">
-                                    <Minus className="w-2.5 h-2.5" />
-                                  </button>
+                                  <button onClick={() => updateSetRow(ex.id, i, -1)} className="w-6 h-6 bg-[#2A2A35] rounded-md flex items-center justify-center active:scale-95 shrink-0"><Minus className="w-2.5 h-2.5" /></button>
                                   <span className="font-bold text-white text-sm w-8 text-center tabular-nums">{row.reps}</span>
-                                  <button onClick={() => updateSetRow(ex.id, i, 'reps', 1)}
-                                    className="w-6 h-6 bg-[#2A2A35] rounded-md flex items-center justify-center active:scale-95 shrink-0">
-                                    <Plus className="w-2.5 h-2.5" />
-                                  </button>
+                                  <button onClick={() => updateSetRow(ex.id, i, 1)} className="w-6 h-6 bg-[#2A2A35] rounded-md flex items-center justify-center active:scale-95 shrink-0"><Plus className="w-2.5 h-2.5" /></button>
                                 </div>
                               </div>
                             ))}
@@ -268,17 +324,18 @@ export function CreateWorkout() {
                 <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-[#8B8CA8]" />
                 <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                   placeholder="Search exercises or muscle..."
-                  className="w-full bg-[#0F0F12] border border-[#2A2A35] rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-[#6366F1] transition-colors"
-                />
+                  className="w-full bg-[#0F0F12] border border-[#2A2A35] rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-[#6366F1] transition-colors" />
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-2 no-scrollbar">
-              {filteredExercises.length > 0 ? filteredExercises.map(e => (
+              {loading ? (
+                <div className="p-8 text-center text-[#8B8CA8]">Loading exercises...</div>
+              ) : filteredOptions.length > 0 ? filteredOptions.map(e => (
                 <button key={e.id} onClick={() => addExercise(e)}
                   className="w-full flex items-center justify-between p-4 border-b border-[#2A2A35]/50 hover:bg-[#1A1A24] transition-colors text-left">
                   <div>
                     <h4 className="font-bold text-white text-base">{e.name}</h4>
-                    <p className="text-[#8B8CA8] text-xs mt-1 uppercase tracking-wider">{e.muscle}</p>
+                    <p className="text-[#8B8CA8] text-xs mt-1 uppercase tracking-wider">{e.muscleGroup}</p>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-[#2A2A35] flex items-center justify-center text-[#10B981]">
                     <Plus className="w-4 h-4" />

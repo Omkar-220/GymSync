@@ -44,7 +44,8 @@ namespace GymTracker.API.Controllers
                             ExerciseName = se.Exercise.Name,
                             MuscleGroup = se.Exercise.MuscleGroup,
                             Order = se.Order,
-                            DefaultSets = se.DefaultSets
+                            DefaultSets = se.DefaultSets,
+                            DefaultReps = se.DefaultReps
                         }).ToList()
                 })
                 .ToListAsync();
@@ -80,7 +81,8 @@ namespace GymTracker.API.Controllers
                             ExerciseName = se.Exercise.Name,
                             MuscleGroup = se.Exercise.MuscleGroup,
                             Order = se.Order,
-                            DefaultSets = se.DefaultSets
+                            DefaultSets = se.DefaultSets,
+                            DefaultReps = se.DefaultReps
                         }).ToList()
                 })
                 .ToListAsync();
@@ -116,7 +118,8 @@ namespace GymTracker.API.Controllers
                         ExerciseName = se.Exercise.Name,
                         MuscleGroup = se.Exercise.MuscleGroup,
                         Order = se.Order,
-                        DefaultSets = se.DefaultSets
+                        DefaultSets = se.DefaultSets,
+                        DefaultReps = se.DefaultReps
                     }).ToList()
             };
             
@@ -243,7 +246,8 @@ namespace GymTracker.API.Controllers
                 SplitId = splitId,
                 ExerciseId = request.ExerciseId,
                 Order = request.Order,
-                DefaultSets = request.DefaultSets ?? 3 // Default to 3 sets if not specified
+                DefaultSets = request.DefaultSets ?? 3,
+                DefaultReps = request.DefaultReps ?? 10
             };
             
             _context.SplitExercises.Add(splitExercise);
@@ -256,7 +260,8 @@ namespace GymTracker.API.Controllers
                 ExerciseName = exercise.Name,
                 MuscleGroup = exercise.MuscleGroup,
                 Order = splitExercise.Order,
-                DefaultSets = splitExercise.DefaultSets
+                DefaultSets = splitExercise.DefaultSets,
+                DefaultReps = splitExercise.DefaultReps
             };
             
             return CreatedAtAction(nameof(GetSplitById), new { id = splitId }, response);
@@ -281,6 +286,9 @@ namespace GymTracker.API.Controllers
             
             if (request.DefaultSets.HasValue)
                 splitExercise.DefaultSets = request.DefaultSets.Value;
+
+            if (request.DefaultReps.HasValue)
+                splitExercise.DefaultReps = request.DefaultReps.Value;
             
             if (request.IsActive.HasValue)
                 splitExercise.IsActive = request.IsActive.Value;
@@ -362,7 +370,8 @@ namespace GymTracker.API.Controllers
                     SplitId = splitId,
                     ExerciseId = exerciseRequest.ExerciseId,
                     Order = exerciseRequest.Order,
-                    DefaultSets = exerciseRequest.DefaultSets ?? 3
+                    DefaultSets = exerciseRequest.DefaultSets ?? 3,
+                    DefaultReps = exerciseRequest.DefaultReps ?? 10
                 };
                 
                 _context.SplitExercises.Add(splitExercise);
@@ -373,7 +382,8 @@ namespace GymTracker.API.Controllers
                     ExerciseName = exercise.Name,
                     MuscleGroup = exercise.MuscleGroup,
                     Order = exerciseRequest.Order,
-                    DefaultSets = exerciseRequest.DefaultSets
+                    DefaultSets = exerciseRequest.DefaultSets,
+                    DefaultReps = exerciseRequest.DefaultReps
                 });
             }
             

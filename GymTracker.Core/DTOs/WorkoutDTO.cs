@@ -8,6 +8,7 @@ namespace GymTracker.Core.DTOs
     {
         public int UserId { get; set; }
         public DayOfWeek Day { get; set; }
+        public bool AllowDuplicate { get; set; } = false;
     }
     
     public class LogSetRequest
@@ -28,6 +29,7 @@ namespace GymTracker.Core.DTOs
         public int DurationMinutes { get; set; }
         public int? Rating { get; set; }
         public string? Notes { get; set; }
+        public bool IsSkipped { get; set; } = false;
     }
     
     // ========== RESPONSE DTOS ==========
@@ -76,6 +78,7 @@ namespace GymTracker.Core.DTOs
         public int PersonalRecordsCount { get; set; }
         public int DurationMinutes { get; set; }
         public bool IsCompleted { get; set; }
+        public bool IsSkipped { get; set; }
     }
     
     public class WorkoutProgressResponse

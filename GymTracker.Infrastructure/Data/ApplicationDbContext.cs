@@ -159,9 +159,10 @@ namespace GymTracker.Infrastructure.Data
             
             modelBuilder.Entity<PersonalRecord>()
                 .HasOne(pr => pr.WorkoutSet)
-                .WithOne(ws => ws.PersonalRecord)
-                .HasForeignKey<PersonalRecord>(pr => pr.WorkoutSetId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .WithMany(ws => ws.PersonalRecords)
+                .HasForeignKey(pr => pr.WorkoutSetId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Cascade);
             
             modelBuilder.Entity<PersonalRecord>()
                 .HasOne(pr => pr.User)

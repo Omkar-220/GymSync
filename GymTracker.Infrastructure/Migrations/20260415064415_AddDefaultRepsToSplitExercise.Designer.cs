@@ -4,6 +4,7 @@ using GymTracker.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GymTracker.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260415064415_AddDefaultRepsToSplitExercise")]
+    partial class AddDefaultRepsToSplitExercise
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -175,7 +178,7 @@ namespace GymTracker.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("WorkoutSetId")
+                    b.Property<int>("WorkoutSetId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -184,7 +187,8 @@ namespace GymTracker.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("WorkoutSetId");
+                    b.HasIndex("WorkoutSetId")
+                        .IsUnique();
 
                     b.ToTable("PersonalRecords");
                 });
@@ -325,9 +329,6 @@ namespace GymTracker.Infrastructure.Migrations
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsSkipped")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
@@ -439,6 +440,9 @@ namespace GymTracker.Infrastructure.Migrations
                     b.Property<int?>("PerceivedExertion")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PersonalRecordId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quality")
                         .HasColumnType("int");
 
@@ -505,9 +509,10 @@ namespace GymTracker.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("GymTracker.Core.Entities.WorkoutSet", "WorkoutSet")
-                        .WithMany("PersonalRecords")
-                        .HasForeignKey("WorkoutSetId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .WithOne("PersonalRecord")
+                        .HasForeignKey("GymTracker.Core.Entities.PersonalRecord", "WorkoutSetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Exercise");
 
@@ -657,7 +662,7 @@ namespace GymTracker.Infrastructure.Migrations
 
             modelBuilder.Entity("GymTracker.Core.Entities.WorkoutSet", b =>
                 {
-                    b.Navigation("PersonalRecords");
+                    b.Navigation("PersonalRecord");
                 });
 #pragma warning restore 612, 618
         }

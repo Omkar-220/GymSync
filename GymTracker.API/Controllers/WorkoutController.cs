@@ -33,7 +33,7 @@ namespace GymTracker.API.Controllers
             var existingWorkout = await _context.Workouts
                 .FirstOrDefaultAsync(w => w.UserId == request.UserId && w.WorkoutDate.Date == DateTime.UtcNow.Date && !w.IsCompleted);
             
-            if (existingWorkout != null)
+            if (existingWorkout != null && !request.AllowDuplicate)
                 return BadRequest($"You already have an active workout today. Workout ID: {existingWorkout.Id}");
             
             // Get the split for the requested day
@@ -56,7 +56,7 @@ namespace GymTracker.API.Controllers
             };
             
             _context.Workouts.Add(workout);
-            await _context.SaveChangesAsync();
+             await _context.SaveChangesAsync();
             
             // Prepare response
             var response = new WorkoutResponse
@@ -209,6 +209,7 @@ namespace GymTracker.API.Controllers
             workout.Rating = request.Rating;
             workout.Notes = request.Notes;
             workout.IsCompleted = true;
+            workout.IsSkipped = request.IsSkipped;
             workout.CompletedAt = DateTime.UtcNow;
             
             await _context.SaveChangesAsync();
@@ -218,7 +219,7 @@ namespace GymTracker.API.Controllers
             var totalReps = workout.WorkoutSets.Sum(ws => ws.Reps);
             var totalVolume = workout.WorkoutSets.Sum(ws => ws.Weight * ws.Reps);
             var personalRecordsCount = await _context.PersonalRecords
-                .CountAsync(pr => pr.WorkoutSet.WorkoutId == workoutId);
+                .CountAsync(pr => pr.WorkoutSetId != null && pr.WorkoutSet!.WorkoutId == workoutId);
             
             var response = new WorkoutResponse
             {
@@ -273,10 +274,11 @@ namespace GymTracker.API.Controllers
                     WorkoutDate = w.WorkoutDate,
                     SplitTag = w.Split != null ? w.Split.Tag : "No Split",
                     TotalSets = w.WorkoutSets.Count,
-                    TotalVolume = w.WorkoutSets.Sum(ws => ws.Weight * ws.Reps),
-                    PersonalRecordsCount = _context.PersonalRecords.Count(pr => pr.WorkoutSet.WorkoutId == w.Id),
+                    TotalVolume = w.WorkoutSets.Sum(ws => (decimal?)ws.Weight * ws.Reps) ?? 0,
+                    PersonalRecordsCount = _context.PersonalRecords.Count(pr => pr.WorkoutSetId != null && pr.WorkoutSet!.WorkoutId == w.Id),
                     DurationMinutes = w.DurationMinutes ?? 0,
-                    IsCompleted = w.IsCompleted
+                    IsCompleted = w.IsCompleted,
+                    IsSkipped = w.IsSkipped
                 })
                 .ToListAsync();
             
@@ -299,7 +301,7 @@ namespace GymTracker.API.Controllers
             
             var totalVolume = workout.WorkoutSets.Sum(ws => ws.Weight * ws.Reps);
             var personalRecordsCount = await _context.PersonalRecords
-                .CountAsync(pr => pr.WorkoutSet.WorkoutId == id);
+                .CountAsync(pr => pr.WorkoutSetId != null && pr.WorkoutSet!.WorkoutId == id);
             
             var response = new WorkoutResponse
             {

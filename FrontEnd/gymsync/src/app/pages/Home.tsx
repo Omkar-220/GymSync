@@ -4,16 +4,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Calendar, ChevronRight, Flame, Activity, Zap, GripVertical, CheckCircle2, Dumbbell, X } from 'lucide-react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import clsx from 'clsx';
 import { useAuth } from '../../lib/AuthContext';
 import api from '../../lib/api';
 
 const ITEM_TYPE = 'EXERCISE';
-
-const STATS = [
-  { label: 'Streak',   value: '12',  unit: 'days', color: 'text-[#10B981]' },
-  { label: 'Workouts', value: '142', unit: null,   color: 'text-[#818CF8]' },
-  { label: 'Volume',   value: '34k', unit: 'kg',   color: 'text-[#F97316]' },
-];
 
 type Exercise = {
   id: number;
@@ -21,14 +16,17 @@ type Exercise = {
   muscle: string;
   target: string;
   sets: number;
+  defaultReps: number;
+  splitExerciseId: number; // needed for reorder API
 };
 
 function DraggableExercise({
-  exercise, index, moveExercise,
+  exercise, index, moveExercise, onTap,
 }: {
   exercise: Exercise;
   index: number;
   moveExercise: (from: number, to: number) => void;
+  onTap: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -53,6 +51,7 @@ function DraggableExercise({
   return (
     <div
       ref={ref}
+      onClick={onTap}
       className={`flex items-center border rounded-[14px] p-3 transition-all cursor-grab active:cursor-grabbing select-none ${
         isDragging
           ? 'opacity-40 bg-[#6366F1]/10 border-[#6366F1]/40 scale-[0.98]'
@@ -77,93 +76,129 @@ function HomeContent() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [exercises, setExercises]         = useState<Exercise[]>([]);
-  const [splitId, setSplitId]             = useState<number | null>(null);
-  const [splitTag, setSplitTag]           = useState('Today\'s Workout');
-  const [trainingStyle, setTrainingStyle] = useState('Hypertrophy');
-  const [showDoneModal, setShowDoneModal] = useState(false);
+  const [exercises, setExercises]               = useState<Exercise[]>([]);
+  const [splitId, setSplitId]                   = useState<number | null>(null);
+  const [splitTag, setSplitTag]                 = useState("Today's Workout");
+  const [trainingStyle, setTrainingStyle]       = useState('Hypertrophy');
+  const [showDoneModal, setShowDoneModal]       = useState(false);
   const [workoutDoneToday, setWorkoutDoneToday] = useState(false);
-  const [checking, setChecking]           = useState(false);
-  const [loading, setLoading]             = useState(true);
+  const [checking, setChecking]                 = useState(false);
+  const [loading, setLoading]                   = useState(true);
+  const [stats, setStats] = useState({ streak: 0, workouts: 0, volume: 0 });
 
-  const todayDow: number = new Date().getDay(); // 0=Sun … 6=Sat
+  const todayDow: number = new Date().getDay();
+  const todayDayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][todayDow];
 
   useEffect(() => {
     if (!user) return;
-
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 1. Fetch today's split
         const splitsRes = await api.get(`/split/user/${user.id}`);
         const todaySplit = splitsRes.data.find((s: any) => s.dayOfWeek === todayDow);
 
         if (todaySplit) {
           setSplitId(todaySplit.id);
-          setSplitTag(todaySplit.tag || 'Today\'s Workout');
+          setSplitTag(todaySplit.tag || "Today's Workout");
           setTrainingStyle(
             todaySplit.trainingStyle === 0 ? 'PowerLifting' :
             todaySplit.trainingStyle === 1 ? 'Hypertrophy' : 'Endurance'
           );
           const mapped: Exercise[] = todaySplit.exercises.map((e: any) => ({
-            id: e.exerciseId,
-            name: e.exerciseName,
-            muscle: e.muscleGroup,
-            target: `${e.defaultSets ?? 3} sets`,
-            sets: e.defaultSets ?? 3,
+            id:              e.exerciseId,
+            splitExerciseId: e.id,
+            name:            e.exerciseName,
+            muscle:          e.muscleGroup,
+            target:          `${e.defaultSets ?? 3} × ${e.defaultReps ?? 10}`,
+            sets:            e.defaultSets ?? 3,
+            defaultReps:     e.defaultReps ?? 10,
           }));
           setExercises(mapped);
         }
 
-        // 2. Check if workout already done today
         const workoutsRes = await api.get(`/workout/user/${user.id}`);
         const today = new Date().toDateString();
         const done = workoutsRes.data.some((w: any) =>
-          w.isCompleted && new Date(w.workoutDate).toDateString() === today
+          w.isCompleted && !w.isSkipped && new Date(w.workoutDate).toDateString() === today
         );
         setWorkoutDoneToday(done);
+
+        // Fetch real stats
+        const userRes = await api.get(`/user/${user.id}`);
+        const s = userRes.data.statistics;
+        setStats({
+          streak:   s.currentStreak,
+          workouts: s.totalWorkouts,
+          volume:   s.totalVolume,
+        });
       } catch {
-        // silently fall through — UI shows empty state
+        // silently fall through
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [user]);
 
-  const handleStartWorkout = async () => {
-    if (workoutDoneToday) {
-      setShowDoneModal(true);
-      return;
-    }
+  const handleStartWorkout = async (allowDuplicate = false) => {
+    if (workoutDoneToday && !allowDuplicate) { setShowDoneModal(true); return; }
     if (!user) return;
     setChecking(true);
     try {
-      // Start the workout on the backend
       const res = await api.post('/workout/start', {
         userId: user.id,
         day: todayDow,
+        allowDuplicate,
       });
-      const workoutId = res.data.id;
-      navigate('/workout', { state: { exercises, workoutId } });
+      navigate('/workout', { state: { exercises, workoutId: res.data.id } });
     } catch (err: any) {
-      // If there's already an active workout today, resume it
-      if (err.response?.status === 400 && err.response.data?.includes('active workout')) {
-        const currentRes = await api.get(`/workout/current/${user.id}`);
-        navigate('/workout', { state: { exercises, workoutId: currentRes.data.id } });
+      if (err.response?.status === 400) {
+        try {
+          const currentRes = await api.get(`/workout/current/${user.id}`);
+          navigate('/workout', { state: { exercises, workoutId: currentRes.data.id } });
+        } catch {
+          navigate('/workout', { state: { exercises, workoutId: null } });
+        }
+      } else {
+        console.error('Start workout failed:', err.response?.data ?? err.message);
       }
     } finally {
       setChecking(false);
     }
   };
 
-  const moveExercise = (from: number, to: number) => {
-    setExercises(prev => {
-      const updated = [...prev];
-      const [moved] = updated.splice(from, 1);
-      updated.splice(to, 0, moved);
-      return updated;
+  const handleSkipWorkout = () => navigate('/skip');
+
+  const moveExercise = async (from: number, to: number) => {
+    const updated = [...exercises];
+    const [moved] = updated.splice(from, 1);
+    updated.splice(to, 0, moved);
+    setExercises(updated);
+
+    // Persist new order to DB
+    if (splitId) {
+      try {
+        await api.put(`/split/${splitId}/exercises/reorder`, {
+          exerciseOrders: updated.map((ex, i) => ({
+            splitExerciseId: ex.splitExerciseId,
+            newOrder: i + 1,
+          })),
+        });
+      } catch {
+        // reorder failed silently — UI already updated
+      }
+    }
+  };
+
+  const navigateToTodaySplit = () => {
+    navigate('/create', {
+      state: {
+        splitId,
+        dayName:   todayDayName,
+        splitName: splitTag,
+        splitType: trainingStyle,
+        returnTo:  'home',
+      },
     });
   };
 
@@ -184,9 +219,6 @@ function HomeContent() {
           <h1 className="text-[21px] font-extrabold tracking-tight text-white">GymSync</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => navigate('/create')} className="w-9 h-9 rounded-full bg-white/[0.04] border border-white/[0.07] flex items-center justify-center text-[#8B8CA8] hover:text-[#818CF8] hover:border-[#6366F1]/50 hover:bg-[#6366F1]/10 transition-all">
-            <Plus className="w-4 h-4" />
-          </button>
           <button onClick={() => navigate('/profile')} className="w-9 h-9 rounded-full bg-white/[0.04] border border-white/[0.07] flex items-center justify-center text-[#8B8CA8] hover:text-white hover:border-white/15 transition-all">
             <svg className="w-[17px] h-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
           </button>
@@ -194,14 +226,19 @@ function HomeContent() {
       </header>
 
       {/* Sub-header */}
-      <div className="flex-shrink-0 flex gap-2 px-5 pt-2.5 pb-3 bg-[#0C0C10]/95 backdrop-blur-xl">
-        <motion.button whileTap={{ scale: 0.97 }} onClick={() => navigate('/create')}
-          className="flex-1 py-2.5 rounded-xl text-[11px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-[#6366F1]/15 to-[#818CF8]/8 border border-[#6366F1]/25 text-[#818CF8] hover:border-[#6366F1]/50 hover:text-[#a5b4fc] transition-all">
-          ✦ Custom Workout
-        </motion.button>
-        <motion.button whileTap={{ scale: 0.97 }} onClick={() => navigate('/history')}
-          className="flex-1 py-2.5 rounded-xl text-[11px] font-extrabold uppercase tracking-wider bg-white/[0.03] border border-white/[0.06] text-[#6B6C84] hover:text-[#8B8CA8] hover:bg-white/[0.06] transition-all">
-          Skip Workout
+      <div className="flex-shrink-0 px-5 pt-2.5 pb-3 bg-[#0C0C10]/95 backdrop-blur-xl">
+        <motion.button
+          whileTap={{ scale: workoutDoneToday ? 1 : 0.97 }}
+          onClick={workoutDoneToday ? undefined : handleSkipWorkout}
+          disabled={workoutDoneToday}
+          className={clsx(
+            'w-full py-2.5 rounded-xl text-[11px] font-extrabold uppercase tracking-wider transition-all',
+            workoutDoneToday
+              ? 'bg-white/[0.02] border border-white/[0.03] text-[#3A3A50] cursor-not-allowed'
+              : 'bg-white/[0.03] border border-white/[0.06] text-[#6B6C84] hover:text-[#8B8CA8] hover:bg-white/[0.06]'
+          )}
+        >
+          {workoutDoneToday ? 'Workout Already Logged' : 'Skip Today\'s Workout'}
         </motion.button>
       </div>
 
@@ -227,7 +264,8 @@ function HomeContent() {
                 <span className="bg-gradient-to-r from-[#6366F1]/20 to-[#818CF8]/10 text-[#818CF8] text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider border border-[#6366F1]/25">
                   {trainingStyle}
                 </span>
-                <button onClick={() => navigate('/create')} className="text-[11px] text-[#6B6C84] bg-white/[0.05] border border-white/[0.07] px-2.5 py-1 rounded-lg hover:text-white hover:border-white/15 transition-all">
+                {/* Edit navigates to today's split config */}
+                <button onClick={navigateToTodaySplit} className="text-[11px] text-[#6B6C84] bg-white/[0.05] border border-white/[0.07] px-2.5 py-1 rounded-lg hover:text-white hover:border-white/15 transition-all">
                   Edit
                 </button>
               </div>
@@ -240,14 +278,16 @@ function HomeContent() {
                 <path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>
               </svg>
               <span>{exercises.length} Exercises</span>
-              <div className="w-1 h-1 rounded-full bg-[#3A3A50]" />
-              <span>~{Math.max(30, exercises.length * 12)} mins</span>
             </div>
           </motion.div>
 
           {/* Stats strip */}
           <div className="grid grid-cols-3 gap-2.5">
-            {STATS.map(({ label, value, unit, color }) => (
+            {[
+              { label: 'Streak',   value: String(stats.streak),   unit: 'days', color: 'text-[#10B981]' },
+              { label: 'Workouts', value: String(stats.workouts),  unit: null,   color: 'text-[#818CF8]' },
+              { label: 'Volume',   value: stats.volume >= 1000 ? `${(stats.volume / 1000).toFixed(1)}k` : String(Math.round(stats.volume)), unit: 'kg', color: 'text-[#F97316]' },
+            ].map(({ label, value, unit, color }) => (
               <div key={label} className="bg-white/[0.03] border border-white/[0.06] rounded-[14px] py-3 flex flex-col items-center gap-1">
                 <span className={`text-[18px] font-extrabold ${color}`}>
                   {value}{unit ? <span className="text-[11px] font-semibold text-[#6B6C84] ml-0.5">{unit}</span> : null}
@@ -298,7 +338,13 @@ function HomeContent() {
             ) : (
               <div className="flex flex-col gap-2">
                 {exercises.map((ex, idx) => (
-                  <DraggableExercise key={ex.id} exercise={ex} index={idx} moveExercise={moveExercise} />
+                  <DraggableExercise
+                    key={ex.id}
+                    exercise={ex}
+                    index={idx}
+                    moveExercise={moveExercise}
+                    onTap={navigateToTodaySplit}
+                  />
                 ))}
               </div>
             )}
@@ -311,7 +357,7 @@ function HomeContent() {
       <div className="flex-shrink-0 px-[18px] pt-3 pb-4 bg-gradient-to-t from-[#0C0C10] via-[#0C0C10]/95 to-transparent">
         <motion.button
           whileTap={{ scale: 0.97 }}
-          onClick={handleStartWorkout}
+          onClick={() => handleStartWorkout()}
           disabled={checking || loading}
           className="w-full relative overflow-hidden text-white font-black py-[17px] rounded-[18px] text-[16px] tracking-[.06em] transition-all disabled:opacity-60"
           style={{
@@ -342,7 +388,6 @@ function HomeContent() {
               <button onClick={() => setShowDoneModal(false)} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-[#8B8CA8] hover:text-white transition-colors">
                 <X className="w-4 h-4" />
               </button>
-
               <div className="flex flex-col items-center text-center mb-8">
                 <div className="w-16 h-16 rounded-full bg-[#10B981]/15 border border-[#10B981]/30 flex items-center justify-center mb-4">
                   <CheckCircle2 className="w-8 h-8 text-[#10B981]" />
@@ -352,10 +397,9 @@ function HomeContent() {
                   You already crushed today's session. Your muscles are growing — rest up and come back stronger.
                 </p>
               </div>
-
               <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => { setShowDoneModal(false); handleStartWorkout(); }}
+                  onClick={() => { setShowDoneModal(false); handleStartWorkout(true); }}
                   className="w-full flex items-center gap-4 bg-[#1A1A28] border border-[#2A2A35] hover:border-[#6366F1]/40 rounded-2xl p-4 transition-all text-left"
                 >
                   <div className="w-10 h-10 rounded-xl bg-[#6366F1]/15 border border-[#6366F1]/25 flex items-center justify-center flex-shrink-0">
@@ -366,9 +410,8 @@ function HomeContent() {
                     <div className="text-[12px] text-[#8B8CA8] mt-0.5">Continue with your configured {splitTag}</div>
                   </div>
                 </button>
-
                 <button
-                  onClick={() => { setShowDoneModal(false); navigate('/create'); }}
+                  onClick={() => { setShowDoneModal(false); navigateToTodaySplit(); }}
                   className="w-full flex items-center gap-4 bg-[#1A1A28] border border-[#2A2A35] hover:border-[#6366F1]/40 rounded-2xl p-4 transition-all text-left"
                 >
                   <div className="w-10 h-10 rounded-xl bg-[#818CF8]/15 border border-[#818CF8]/25 flex items-center justify-center flex-shrink-0">
@@ -379,7 +422,6 @@ function HomeContent() {
                     <div className="text-[12px] text-[#8B8CA8] mt-0.5">Configure a custom session from scratch</div>
                   </div>
                 </button>
-
                 <button onClick={() => setShowDoneModal(false)} className="w-full py-3.5 rounded-2xl text-[#8B8CA8] text-sm font-bold hover:text-white transition-colors">
                   I'll rest today 💤
                 </button>
