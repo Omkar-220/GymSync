@@ -241,22 +241,37 @@ export function History() {
 
               {/* PRs — scrollable */}
               <div className="flex-1 overflow-hidden flex flex-col min-h-0 pb-6">
-                <h3 className="flex-shrink-0 text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-[#EAB308]" />
-                  Recent PRs
-                </h3>
+                <div className="flex-shrink-0 flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-[#EAB308]" />
+                    Recent PRs
+                  </h3>
+                </div>
+                {/* Search */}
+                <div className="flex-shrink-0 relative mb-3">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8B8CA8]" />
+                  <input
+                    type="text"
+                    value={prSearch}
+                    onChange={e => setPrSearch(e.target.value)}
+                    placeholder="Search exercise..."
+                    className="w-full bg-[#1A1A24] border border-[#2A2A35] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-[#8B8CA8] focus:outline-none focus:border-[#6366F1] transition-colors"
+                  />
+                </div>
                 {loadingList ? (
                   <div className="flex flex-col gap-3">
                     {[1,2,3].map(i => <div key={i} className="h-16 bg-[#1A1A24] rounded-xl animate-pulse" />)}
                   </div>
-                ) : recentPRs.length === 0 ? (
-                  <div className="text-center py-8 text-[#8B8CA8] text-sm">No PRs yet — start lifting!</div>
+                ) : filteredPRs.length === 0 ? (
+                  <div className="text-center py-8 text-[#8B8CA8] text-sm">
+                    {prSearch ? `No PRs found for "${prSearch}"` : 'No PRs yet — start lifting!'}
+                  </div>
                 ) : (
                   <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-3">
-                    {recentPRs.map((pr: any, idx: number) => (
+                    {filteredPRs.map((pr: any, idx: number) => (
                       <motion.div key={pr.id}
                         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
+                        transition={{ delay: idx * 0.05 }}
                         className="flex-shrink-0 bg-[#1A1A24]/50 border border-[#2A2A35] p-4 rounded-xl flex items-center justify-between"
                       >
                         <div className="flex items-center gap-4">
@@ -268,7 +283,7 @@ export function History() {
                             <p className="text-[#8B8CA8] text-sm mt-0.5">{format(new Date(pr.achievedAt), 'MMM d, yyyy')}</p>
                           </div>
                         </div>
-                        <span className="bg-[#2A2A35] text-[#10B981] text-sm font-bold px-3 py-1.5 rounded-lg">
+                        <span className="bg-[#2A2A35] text-[#10B981] text-sm font-bold px-3 py-1.5 rounded-lg whitespace-nowrap">
                           {pr.value.toFixed(1)} kg × {pr.reps}
                         </span>
                       </motion.div>
@@ -288,14 +303,18 @@ export function History() {
               {/* Calendar Navigator */}
               <div className="bg-[#181820] rounded-2xl p-5 border border-[#2A2A35] shadow-lg">
                 <div className="flex justify-between items-center mb-4">
-                  <button onClick={() => setWeekStart(w => subWeeks(w, 1))}
-                    className="p-1.5 rounded-lg hover:bg-[#2A2A35] transition-colors">
-                    <ChevronLeft className="w-5 h-5 text-[#8B8CA8]" />
+                  <button
+                    onClick={() => canGoPrev && setWeekStart(w => subWeeks(w, 1))}
+                    disabled={!canGoPrev}
+                    className={clsx('p-1.5 rounded-lg transition-colors', canGoPrev ? 'hover:bg-[#2A2A35] text-[#8B8CA8]' : 'text-[#3A3A45] cursor-not-allowed')}>
+                    <ChevronLeft className="w-5 h-5" />
                   </button>
                   <span className="text-white font-bold text-sm">{weekLabel}</span>
-                  <button onClick={() => setWeekStart(w => addWeeks(w, 1))}
-                    className="p-1.5 rounded-lg hover:bg-[#2A2A35] transition-colors">
-                    <ChevronRight className="w-5 h-5 text-[#8B8CA8]" />
+                  <button
+                    onClick={() => canGoNext && setWeekStart(w => addWeeks(w, 1))}
+                    disabled={!canGoNext}
+                    className={clsx('p-1.5 rounded-lg transition-colors', canGoNext ? 'hover:bg-[#2A2A35] text-[#8B8CA8]' : 'text-[#3A3A45] cursor-not-allowed')}>
+                    <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
                 <div className="grid grid-cols-7 gap-2">

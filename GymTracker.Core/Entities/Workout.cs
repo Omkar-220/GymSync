@@ -9,8 +9,8 @@ namespace GymTracker.Core.Entities
         public DateTime WorkoutDate { get; set; } = DateTime.UtcNow;
         public int? SplitId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public bool IsCompleted { get; set; } = falsee;
-        public bool IsSkipped { get; set; } = false;e
+        public bool IsCompleted { get; set; } = false;
+        public bool IsSkipped { get; set; } = false;
         public DateTime? CompletedAt { get; set; }      // set when IsCompleted = true
         public int? DurationMinutes { get; set; }       // in minutes
         public int? Rating { get; set; }                // RPE 1-10

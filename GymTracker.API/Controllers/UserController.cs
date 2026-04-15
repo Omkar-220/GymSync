@@ -61,6 +61,7 @@ namespace GymTracker.API.Controllers
                 .Include(u => u.Workouts)
                 .Include(u => u.PersonalRecords)
                 .Include(u => u.WorkoutSets)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(u => u.Id == id);
             
             if (user == null)

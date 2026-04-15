@@ -63,7 +63,10 @@ builder.Services.AddSwaggerGen(c =>
 
 // Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+    ));
 
 // Register JWT Service
 builder.Services.AddScoped<IJwtService, JwtService>();

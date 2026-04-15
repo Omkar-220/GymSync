@@ -196,6 +196,7 @@ namespace GymTracker.API.Controllers
                 .ThenInclude(ws => ws.Exercise)
                 .Include(w => w.Split)
                 .Include(w => w.User)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(w => w.Id == workoutId);
             
             if (workout == null)
@@ -294,6 +295,7 @@ namespace GymTracker.API.Controllers
                     .ThenInclude(ws => ws.Exercise)
                 .Include(w => w.Split)
                 .Include(w => w.User)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(w => w.Id == id);
             
             if (workout == null)
