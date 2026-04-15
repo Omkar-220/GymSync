@@ -1,3 +1,4 @@
+import React from "react";
 import { createBrowserRouter, Navigate } from "react-router";
 import { MobileWrapper } from "./components/MobileWrapper";
 import { Home } from "./pages/Home";
@@ -13,14 +14,10 @@ import { LogNutrition } from "./pages/LogNutrition";
 import { Login } from "./pages/Login";
 import { useAuth } from "../lib/AuthContext";
 
-// function ProtectedRoute({ children }: { children: React.ReactNode }) {
-//   const { user } = useAuth();
-//   return user ? <>{children}</> : <Navigate to="/login" replace />;
-// }
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  const { user } = useAuth();
+  return user ? <>{children}</> : <Navigate to="/login" replace />;
 }
-// allowin all routes 
 
 export const router = createBrowserRouter([
   { path: "login", Component: Login },
