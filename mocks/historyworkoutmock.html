@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>GymSync – History Workout Mock</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(ellipse at 50% 0%, #0d0d1a 0%, #060608 60%);
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .phone {
+      width: 390px; height: 844px;
+      background: #0C0C10; border-radius: 48px; overflow: hidden;
+      position: relative; display: flex; flex-direction: column;
+      box-shadow:
+        0 0 0 1px rgba(99,102,241,.12),
+        0 0 0 1.5px #1a1a28,
+        0 32px 64px rgba(0,0,0,.9),
+        0 0 80px rgba(92,92,255,.06);
+      color: #fff;
+    }
+    .screen { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+    /* Header */
+    header {
+      flex-shrink: 0;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 22px 24px 16px;
+      background: rgba(12,12,16,.95); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      position: relative;
+    }
+    header::after {
+      content: ''; position: absolute; bottom: 0; left: 24px; right: 24px; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99,102,241,.3), transparent);
+    }
+    header h1 { font-size: 22px; font-weight: 800; letter-spacing: -.4px; }
+    .btn-icon {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      color: #8B8CA8; cursor: pointer;
+    }
+    .btn-icon svg { width: 18px; height: 18px; }
+
+    /* Segmented control */
+    .seg {
+      flex-shrink: 0;
+      display: flex; gap: 4px;
+      margin: 14px 20px 0;
+      background: #1A1A24; border: 1px solid #2A2A35;
+      border-radius: 12px; padding: 4px;
+    }
+    .seg-btn {
+      flex: 1; padding: 8px; border: none; border-radius: 9px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      background: none; color: #8B8CA8; transition: all .2s;
+    }
+    .seg-btn.active { background: #2A2A35; color: #fff; }
+
+    /* Calendar */
+    .cal {
+      flex-shrink: 0;
+      background: #181820; border: 1px solid #2A2A35;
+      border-radius: 20px; margin: 14px 20px; padding: 14px 16px;
+    }
+    .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .cal-nav span { font-size: 14px; font-weight: 700; }
+    .cal-nav button { background: none; border: none; color: #8B8CA8; cursor: pointer; }
+    .cal-nav button svg { width: 18px; height: 18px; display: block; }
+    .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-day { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; border: none; background: none; }
+    .cal-lbl { font-size: 10px; font-weight: 700; color: #8B8CA8; }
+    .cal-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; transition: all .15s;
+    }
+    .cal-num.workout { background: rgba(16,185,129,.15); color: #10B981; border: 1px solid rgba(16,185,129,.4); }
+    .cal-num.selected { background: #5C5CFF; color: #fff; box-shadow: 0 0 10px rgba(92,92,255,.4); }
+    .cal-num.empty { background: #2A2A35; color: #8B8CA8; }
+
+    /* Scroll */
+    .scroll { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; padding: 0 20px 20px; }
+    .scroll::-webkit-scrollbar { display: none; }
+
+    .day-heading {
+      font-size: 11px; font-weight: 800; color: #8B8CA8;
+      text-transform: uppercase; letter-spacing: .1em;
+      margin-bottom: 10px;
+    }
+
+    /* Workout card */
+    .wo-card {
+      background: #181820; border: 1px solid #2A2A35;
+      border-radius: 20px; overflow: hidden; margin-bottom: 12px;
+    }
+
+    /* Top row: name + badge */
+    .wo-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid rgba(42,42,53,.7);
+    }
+    .wo-name { font-size: 19px; font-weight: 900; letter-spacing: -.3px; }
+    .wo-subtime { font-size: 11px; color: #8B8CA8; margin-top: 2px; }
+    .wo-badge {
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+      padding: 4px 10px; border-radius: 20px;
+      background: linear-gradient(135deg, rgba(99,102,241,.2), rgba(129,140,248,.1));
+      color: #818CF8; border: 1px solid rgba(99,102,241,.25);
+      white-space: nowrap; flex-shrink: 0; margin-left: 8px;
+    }
+
+    /* Stats: volume + duration side by side */
+    .wo-stats { display: flex; border-bottom: 1px solid rgba(42,42,53,.7); }
+    .wo-stat { flex: 1; padding: 10px 16px; display: flex; flex-direction: column; gap: 2px; }
+    .wo-stat + .wo-stat { border-left: 1px solid rgba(42,42,53,.7); }
+    .wo-stat-val { font-size: 16px; font-weight: 800; }
+    .wo-stat-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #8B8CA8; }
+    .wo-stat.vol .wo-stat-val { color: #818CF8; }
+    .wo-stat.dur .wo-stat-val { color: #F97316; }
+
+    /* Exercise rows */
+    .wo-exs { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .wo-ex {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.05);
+      border-radius: 12px; padding: 8px 12px;
+    }
+    .wo-ex-n {
+      width: 24px; height: 24px; border-radius: 7px;
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: #6B6C84; flex-shrink: 0;
+    }
+    .wo-ex-name { flex: 1; font-size: 13px; font-weight: 700; color: #e8e8f0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wo-ex-sets { font-size: 11px; color: #8B8CA8; font-weight: 600; flex-shrink: 0; }
+
+    /* Empty */
+    .empty { text-align: center; padding: 36px 20px; background: #181820; border: 1px solid #2A2A35; border-radius: 20px; }
+    .empty svg { width: 32px; height: 32px; color: #2A2A35; margin: 0 auto 10px; display: block; }
+    .empty p { font-size: 13px; color: #8B8CA8; font-weight: 600; }
+
+    /* Bottom nav */
+    .bottom-nav {
+      flex-shrink: 0; height: 66px;
+      background: rgba(14,14,20,.98); backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,.04);
+      display: flex; align-items: center; justify-content: space-around; padding: 0 8px;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      width: 60px; height: 100%; color: #4A4A60;
+      cursor: pointer; border: none; background: none; transition: color .2s;
+    }
+    .nav-item.active { color: #818CF8; }
+    .nav-item svg { width: 22px; height: 22px; }
+    .nav-label { font-size: 10px; font-weight: 700; }
+  </style>
+</head>
+<body>
+<div class="phone"><div class="screen">
+
+  <header>
+    <h1>Progress</h1>
+    <button class="btn-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </button>
+  </header>
+
+  <div class="seg">
+    <button class="seg-btn">Statistics</button>
+    <button class="seg-btn active">History</button>
+  </div>
+
+  <div class="cal">
+    <div class="cal-nav">
+      <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <span>Apr 6 – Apr 12, 2026</span>
+      <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="cal-days" id="calDays"></div>
+  </div>
+
+  <div class="scroll">
+    <div class="day-heading" id="dayHeading"></div>
+    <div id="woList"></div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+      <span class="nav-label">History</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+      <span class="nav-label">Nutrition</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      <span class="nav-label">Progress</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-label">Profile</span>
+    </button>
+  </nav>
+
+</div></div>
+
+<script>
+const DAYS = [
+  { l:'M', num:6,  date:'2026-04-06', hasWorkout:true  },
+  { l:'T', num:7,  date:'2026-04-07', hasWorkout:false },
+  { l:'W', num:8,  date:'2026-04-08', hasWorkout:false },
+  { l:'T', num:9,  date:'2026-04-09', hasWorkout:true  },
+  { l:'F', num:10, date:'2026-04-10', hasWorkout:true  },
+  { l:'S', num:11, date:'2026-04-11', hasWorkout:false },
+  { l:'S', num:12, date:'2026-04-12', hasWorkout:false },
+];
+
+const WORKOUTS = {
+  '2026-04-06': [{
+    name:'Leg Day', time:'Monday, 7:15 AM', badge:'Strength',
+    volume:'6.2k kg', duration:'60m',
+    exercises:[
+      {name:'Squats',         sets:'5 × 120kg'},
+      {name:'Leg Press',      sets:'4 × 200kg'},
+      {name:'Romanian DL',    sets:'3 × 80kg' },
+      {name:'Leg Curl',       sets:'3 × 60kg' },
+    ]
+  }],
+  '2026-04-09': [{
+    name:'Pull Day', time:'Thursday, 6:30 PM', badge:'Hypertrophy',
+    volume:'5.1k kg', duration:'55m',
+    exercises:[
+      {name:'Pull-ups',       sets:'4 × BW'   },
+      {name:'Barbell Rows',   sets:'4 × 80kg' },
+      {name:'Face Pulls',     sets:'3 × 25kg' },
+      {name:'Bicep Curls',    sets:'3 × 20kg' },
+    ]
+  }],
+  '2026-04-10': [{
+    name:'Push Day', time:'Friday, 8:00 AM', badge:'Hypertrophy',
+    volume:'4.5k kg', duration:'45m',
+    exercises:[
+      {name:'Bench Press',    sets:'4 × 100kg'},
+      {name:'OHP',            sets:'3 × 60kg' },
+      {name:'Incline DB',     sets:'3 × 30kg' },
+      {name:'Lateral Raise',  sets:'4 × 12kg' },
+    ]
+  }],
+};
+
+const DAY_LABELS = {
+  '2026-04-06':'Monday, Apr 6',
+  '2026-04-07':'Tuesday, Apr 7',
+  '2026-04-08':'Wednesday, Apr 8',
+  '2026-04-09':'Thursday, Apr 9',
+  '2026-04-10':'Friday, Apr 10',
+  '2026-04-11':'Saturday, Apr 11',
+  '2026-04-12':'Sunday, Apr 12',
+};
+
+let selected = '2026-04-10';
+
+function renderCal() {
+  const c = document.getElementById('calDays');
+  c.innerHTML = '';
+  DAYS.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'cal-day';
+    btn.onclick = () => { selected = d.date; renderCal(); renderWorkouts(); };
+    btn.innerHTML = `
+      <span class="cal-lbl">${d.l}</span>
+      <div class="cal-num ${d.date === selected ? 'selected' : d.hasWorkout ? 'workout' : 'empty'}">${d.num}</div>`;
+    c.appendChild(btn);
+  });
+}
+
+function renderWorkouts() {
+  document.getElementById('dayHeading').textContent = DAY_LABELS[selected];
+  const list = document.getElementById('woList');
+  const wos  = WORKOUTS[selected];
+
+  if (!wos) {
+    list.innerHTML = `
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.4 14.4 9.6 9.6"/>
+          <path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/>
+          <path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/>
+          <path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>
+        </svg>
+        <p>No workouts on this day</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = wos.map(wo => `
+    <div class="wo-card">
+      <div class="wo-head">
+        <div>
+          <div class="wo-name">${wo.name}</div>
+          <div class="wo-subtime">${wo.time}</div>
+        </div>
+        <span class="wo-badge">${wo.badge}</span>
+      </div>
+      <div class="wo-stats">
+        <div class="wo-stat vol">
+          <span class="wo-stat-val">${wo.volume}</span>
+          <span class="wo-stat-lbl">Volume</span>
+        </div>
+        <div class="wo-stat dur">
+          <span class="wo-stat-val">${wo.duration}</span>
+          <span class="wo-stat-lbl">Duration</span>
+        </div>
+      </div>
+      <div class="wo-exs">
+        ${wo.exercises.map((ex, i) => `
+          <div class="wo-ex">
+            <div class="wo-ex-n">${i+1}</div>
+            <span class="wo-ex-name">${ex.name}</span>
+            <span class="wo-ex-sets">${ex.sets}</span>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+renderCal();
+renderWorkouts();
+</script>
+</body>
+</html>
