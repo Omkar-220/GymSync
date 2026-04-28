@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { ChevronLeft, Calendar, Trophy, Dumbbell, TrendingUp, ChevronRight, Search } from 'lucide-react';
+import { ChevronLeft, Trophy, Dumbbell, TrendingUp, ChevronRight, Search } from 'lucide-react';
 import clsx from 'clsx';
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday } from 'date-fns';
 import { useAuth } from '../../lib/AuthContext';
@@ -171,9 +171,6 @@ export function History() {
       {/* Header */}
       <header className="flex-shrink-0 flex justify-between items-center p-6 bg-[#0F0F12]/90 backdrop-blur-md z-10 border-b border-[#2A2A35]/50">
         <h1 className="text-2xl font-bold tracking-tight">Progress</h1>
-        <button className="text-[#8B8CA8] hover:text-white transition-colors">
-          <Calendar className="w-6 h-6" />
-        </button>
       </header>
 
       {/* Segmented Control */}

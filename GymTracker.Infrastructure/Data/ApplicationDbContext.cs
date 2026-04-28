@@ -19,6 +19,7 @@ namespace GymTracker.Infrastructure.Data
         public DbSet<NutritionLog> NutritionLogs { get; set; }
         public DbSet<PersonalRecord> PersonalRecords { get; set; }
         public DbSet<WorkoutGoal> WorkoutGoals { get; set; }
+        public DbSet<UserAchievement> UserAchievements { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -209,6 +210,16 @@ namespace GymTracker.Infrastructure.Data
             
             modelBuilder.Entity<WorkoutSet>()
                 .HasIndex(ws => new { ws.WorkoutId, ws.ExerciseId, ws.SetNumber })
+                .IsUnique();
+
+            modelBuilder.Entity<UserAchievement>()
+                .HasOne(a => a.User)
+                .WithMany(u => u.Achievements)
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserAchievement>()
+                .HasIndex(a => new { a.UserId, a.Key })
                 .IsUnique();
         }
     }

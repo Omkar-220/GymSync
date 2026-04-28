@@ -17,7 +17,8 @@ namespace GymTracker.Core.Entities
         public ICollection<NutritionLog> NutritionLogs { get; set; } = new List<NutritionLog>();
         public ICollection<PersonalRecord> PersonalRecords { get; set; } = new List<PersonalRecord>();
         public ICollection<WorkoutSet> WorkoutSets { get; set; } = new List<WorkoutSet>();  
-        public ICollection<WorkoutGoal> WorkoutGoals { get; set; } = new List<WorkoutGoal>();  
+        public ICollection<WorkoutGoal> WorkoutGoals { get; set; } = new List<WorkoutGoal>();
+        public ICollection<UserAchievement> Achievements { get; set; } = new List<UserAchievement>();
 
     }   
 }

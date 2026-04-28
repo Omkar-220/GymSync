@@ -6,7 +6,7 @@ using GymTracker.Core.DTOs;
 
 namespace GymTracker.API.Controllers
 {
-    public class ExerciseController : BaseApiController // inherits from BaseApiController which is also being inherited by the ControllerBase
+    public class ExerciseController : BaseApiController
     {
         private readonly ApplicationDbContext _context;
         

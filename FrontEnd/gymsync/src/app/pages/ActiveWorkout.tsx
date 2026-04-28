@@ -5,6 +5,7 @@ import { ChevronLeft, Minus, Plus, VolumeX, Volume2, CheckCircle2, Trophy } from
 import { toast } from 'sonner';
 import clsx from 'clsx';
 import api from '../../lib/api';
+import { useAuth } from '../../lib/AuthContext';
 
 const FALLBACK_PLAN = [
   { id: 1, name: 'Barbell Bench Press', muscle: 'Chest', sets: 4 },
@@ -40,14 +41,27 @@ export function ActiveWorkout() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showCheck,    setShowCheck]    = useState(false);
   const [showPR,       setShowPR]       = useState(false);
+  const [showGoal,     setShowGoal]     = useState<string | null>(null);
   const [logging,      setLogging]      = useState(false);
-  const [workoutTime,  setWorkoutTime]  = useState(0); // total elapsed seconds
+  const [workoutTime,  setWorkoutTime]  = useState(0);
+
+  // Track active goal IDs so we can detect when one disappears (= achieved)
+  const activeGoalIdsRef = React.useRef<Set<number> | null>(null);
+  const { user } = useAuth();
 
   const currentExercise = WORKOUT_PLAN[exerciseIdx];
   const isLastExercise  = exerciseIdx === WORKOUT_PLAN.length - 1;
   const isLastSet       = currentSet === currentExercise.sets;
   const isFinished      = isLastExercise && isLastSet;
   const REST_DURATION   = 60;
+
+  // Seed active goal IDs on mount
+  useEffect(() => {
+    if (!user) return;
+    api.get(`/workoutgoal/user/${user.id}/active`)
+      .then(res => { activeGoalIdsRef.current = new Set(res.data.map((g: any) => g.id)); })
+      .catch(() => {});
+  }, [user]);
 
   // Overall workout timer (counts up)
   useEffect(() => {
@@ -90,6 +104,24 @@ export function ActiveWorkout() {
         if (res.data.isPersonalRecord) {
           setShowPR(true);
           setTimeout(() => setShowPR(false), 2500);
+        }
+
+        // Check if any active goal was just achieved
+        if (user) {
+          try {
+            const goalsRes = await api.get(`/workoutgoal/user/${user.id}/active`);
+            const currentActiveIds = new Set<number>(goalsRes.data.map((g: any) => g.id));
+            if (activeGoalIdsRef.current !== null) {
+              for (const prevId of activeGoalIdsRef.current) {
+                if (!currentActiveIds.has(prevId)) {
+                  setShowGoal('Goal achieved! 🎯');
+                  setTimeout(() => setShowGoal(null), 3000);
+                  break;
+                }
+              }
+            }
+            activeGoalIdsRef.current = currentActiveIds;
+          } catch { /* silent */ }
         }
       }
 
@@ -167,6 +199,20 @@ export function ActiveWorkout() {
             className="absolute top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#EAB308]/20 border border-[#EAB308]/40 text-[#EAB308] px-4 py-2 rounded-full font-bold text-sm"
           >
             <Trophy className="w-4 h-4" /> New Personal Record!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Goal Achieved Badge */}
+      <AnimatePresence>
+        {showGoal && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.8 }}
+            className="absolute top-32 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-[#10B981]/20 border border-[#10B981]/40 text-[#10B981] px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap"
+          >
+            🎯 {showGoal}
           </motion.div>
         )}
       </AnimatePresence>

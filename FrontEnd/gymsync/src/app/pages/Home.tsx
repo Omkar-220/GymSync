@@ -146,7 +146,6 @@ function HomeContent() {
     setChecking(true);
     try {
       const res = await api.post('/workout/start', {
-        userId: user.id,
         day: todayDow,
         allowDuplicate,
       });

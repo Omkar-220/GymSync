@@ -9,7 +9,7 @@ namespace GymTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class WorkoutController : ControllerBase
+    public class WorkoutController : BaseApiController
     {
         private readonly ApplicationDbContext _context;
         
@@ -24,31 +24,28 @@ namespace GymTracker.API.Controllers
         [HttpPost("start")]
         public async Task<ActionResult<WorkoutResponse>> StartWorkout([FromBody] StartWorkoutRequest request)
         {
-            
-            var user = await _context.Users.FindAsync(request.UserId);
+            var userId = GetCurrentUserId();
+            var user = await _context.Users.FindAsync(userId);
             if (user == null)
-                return NotFound($"User with ID {request.UserId} not found");
+                return NotFound($"User not found");
             
-            // Check if there's an active workout already for today
             var existingWorkout = await _context.Workouts
-                .FirstOrDefaultAsync(w => w.UserId == request.UserId && w.WorkoutDate.Date == DateTime.UtcNow.Date && !w.IsCompleted);
+                .FirstOrDefaultAsync(w => w.UserId == userId && w.WorkoutDate.Date == DateTime.UtcNow.Date && !w.IsCompleted);
             
             if (existingWorkout != null && !request.AllowDuplicate)
                 return BadRequest($"You already have an active workout today. Workout ID: {existingWorkout.Id}");
             
-            // Get the split for the requested day
             var split = await _context.Splits
                 .Include(s => s.SplitExercises)
                     .ThenInclude(se => se.Exercise)
-                .FirstOrDefaultAsync(s => s.UserId == request.UserId && s.DayOfWeek == request.Day && s.IsActive);
+                .FirstOrDefaultAsync(s => s.UserId == userId && s.DayOfWeek == request.Day && s.IsActive);
             
             if (split == null)
                 return BadRequest($"No active split found for {request.Day}. Please create a split for this day first.");
             
-            // Create new workout
             var workout = new Workout
             {
-                UserId = request.UserId,
+                UserId = userId,
                 WorkoutDate = DateTime.UtcNow,
                 SplitId = split.Id,
                 CreatedAt = DateTime.UtcNow,
@@ -274,6 +271,7 @@ namespace GymTracker.API.Controllers
                     Id = w.Id,
                     WorkoutDate = w.WorkoutDate,
                     SplitTag = w.Split != null ? w.Split.Tag : "No Split",
+                    TrainingStyle = w.Split != null ? w.Split.TrainingStyle : TrainingStyle.Hypertrophy,
                     TotalSets = w.WorkoutSets.Count,
                     TotalVolume = w.WorkoutSets.Sum(ws => (decimal?)ws.Weight * ws.Reps) ?? 0,
                     PersonalRecordsCount = _context.PersonalRecords.Count(pr => pr.WorkoutSetId != null && pr.WorkoutSet!.WorkoutId == w.Id),
@@ -498,7 +496,46 @@ namespace GymTracker.API.Controllers
             }
             
             await _context.SaveChangesAsync();
+
+            // After saving PRs, check if any active goals are now met for this exercise
+            await CheckGoalsForSet(userId, exerciseId, weight, reps, workoutSetId);
+
             return isRecord;
+        }
+
+        private async Task CheckGoalsForSet(int userId, int exerciseId, decimal weight, int reps, int workoutSetId)
+        {
+            var activeGoals = await _context.WorkoutGoals
+                .Where(g => g.UserId == userId &&
+                            g.TargetExerciseId == exerciseId &&
+                            !g.IsAchieved &&
+                            g.TargetDate >= DateTime.UtcNow)
+                .ToListAsync();
+
+            if (!activeGoals.Any()) return;
+
+            var workoutId = await _context.WorkoutSets
+                .Where(ws => ws.Id == workoutSetId)
+                .Select(ws => ws.WorkoutId)
+                .FirstOrDefaultAsync();
+
+            foreach (var goal in activeGoals)
+            {
+                bool met = goal.TargetReps.HasValue
+                    ? weight >= goal.TargetValue && reps >= goal.TargetReps.Value
+                    : weight >= goal.TargetValue;
+
+                if (met)
+                {
+                    goal.IsAchieved = true;
+                    goal.AchievedAt = DateTime.UtcNow;
+                    goal.AchievedInWorkoutId = workoutId;
+                    goal.AchievedValue = weight;
+                    goal.AchievedReps = reps;
+                }
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

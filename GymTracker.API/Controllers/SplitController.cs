@@ -9,7 +9,7 @@ namespace GymTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SplitController : ControllerBase
+    public class SplitController : BaseApiController
     {
         private readonly ApplicationDbContext _context;
         

@@ -73,6 +73,7 @@ namespace GymTracker.Core.DTOs
         public int Id { get; set; }
         public DateTime WorkoutDate { get; set; }
         public string SplitTag { get; set; } = string.Empty;
+        public TrainingStyle TrainingStyle { get; set; }
         public int TotalSets { get; set; }
         public decimal TotalVolume { get; set; }
         public int PersonalRecordsCount { get; set; }

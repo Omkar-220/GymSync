@@ -8,7 +8,7 @@ namespace GymTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class NutritionController : ControllerBase
+    public class NutritionController : BaseApiController
     {
         private readonly ApplicationDbContext _context;
         
@@ -21,11 +21,12 @@ namespace GymTracker.API.Controllers
         [HttpPost("log")]
         public async Task<ActionResult<NutritionLogResponse>> LogNutrition([FromBody] LogNutritionRequest request)
         {
+            var userId = GetCurrentUserId();
             var calories = request.Calories ?? (request.Protein * 4 + request.Carbs * 4 + request.Fats * 9);
             
             var nutritionLog = new NutritionLog
             {
-                UserId = request.UserId,
+                UserId = userId,
                 LogDate = request.LogDate,
                 Protein = request.Protein,
                 Carbs = request.Carbs,
@@ -41,9 +42,9 @@ namespace GymTracker.API.Controllers
             };
             
             var workout = await _context.Workouts
-                .FirstOrDefaultAsync(w => w.UserId == request.UserId && 
+                .FirstOrDefaultAsync(w => w.UserId == userId && 
                                           w.WorkoutDate.Date == request.LogDate.Date &&
-                                          w.IsCompleted); // checking for completed workout on the same day
+                                          w.IsCompleted && !w.IsSkipped);
             
             if (workout != null)
             {
@@ -53,8 +54,7 @@ namespace GymTracker.API.Controllers
             _context.NutritionLogs.Add(nutritionLog);
             await _context.SaveChangesAsync();
             
-            // Get users body weight 
-            var user = await _context.Users.FindAsync(request.UserId);
+            var user = await _context.Users.FindAsync(userId);
             var proteinGoal = user?.Weight.HasValue == true ? user.Weight.Value * 1.6m : 120m; // 1.6g per kg bodyweight
             
             var response = new NutritionLogResponse
@@ -201,6 +201,71 @@ namespace GymTracker.API.Controllers
             return Ok(response);
         }
         
+        // PUT: api/nutrition/{id}
+        [HttpPut("{id}")]
+        public async Task<ActionResult<NutritionLogResponse>> UpdateNutritionLog(int id, [FromBody] LogNutritionRequest request)
+        {
+            var userId = GetCurrentUserId();
+            var log = await _context.NutritionLogs.FindAsync(id);
+            if (log == null)
+                return NotFound($"Nutrition log with ID {id} not found");
+
+            // Ensure user owns this log
+            if (log.UserId != userId)
+                return Forbid();
+
+            var calories = request.Calories ?? (request.Protein * 4 + request.Carbs * 4 + request.Fats * 9);
+
+            log.Protein   = request.Protein;
+            log.Carbs     = request.Carbs;
+            log.Fats      = request.Fats;
+            log.Fiber     = request.Fiber ?? 0;
+            log.Zinc      = request.Zinc ?? 0;
+            log.Magnesium = request.Magnesium ?? 0;
+            log.Iron      = request.Iron ?? 0;
+            log.Creatine  = request.Creatine ?? 0;
+            log.Omega3    = request.Omega3 ?? 0;
+            log.Calories  = calories;
+            log.Notes     = request.Notes;
+
+            // Link workout if one exists on the same day and not already linked
+            if (log.WorkoutId == null)
+            {
+                var workout = await _context.Workouts
+                    .FirstOrDefaultAsync(w => w.UserId == userId &&
+                                              w.WorkoutDate.Date == log.LogDate.Date &&
+                                              w.IsCompleted && !w.IsSkipped);
+                if (workout != null)
+                    log.WorkoutId = workout.Id;
+            }
+
+            await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FindAsync(userId);
+            var proteinGoal = user?.Weight.HasValue == true ? user.Weight.Value * 1.6m : 120m;
+
+            return Ok(new NutritionLogResponse
+            {
+                Id        = log.Id,
+                LogDate   = log.LogDate,
+                Protein   = log.Protein,
+                Carbs     = log.Carbs,
+                Fats      = log.Fats,
+                Fiber     = log.Fiber,
+                Zinc      = log.Zinc,
+                Magnesium = log.Magnesium,
+                Iron      = log.Iron,
+                Creatine  = log.Creatine,
+                Omega3    = log.Omega3,
+                Calories  = log.Calories,
+                Notes     = log.Notes,
+                WorkoutId = log.WorkoutId,
+                MeetsProteinGoal = log.Protein >= proteinGoal,
+                MeetsFiberGoal   = log.Fiber >= 25m,
+                Recommendation   = GetRecommendation(log, proteinGoal)
+            });
+        }
+
         // ========== PRIVATE HELPER METHODS ==========
         
         private string GetRecommendation(NutritionLog log, decimal proteinGoal)

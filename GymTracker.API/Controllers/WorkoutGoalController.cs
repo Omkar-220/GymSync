@@ -9,7 +9,7 @@ namespace GymTracker.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class WorkoutGoalController : ControllerBase
+    public class WorkoutGoalController : BaseApiController
     {
         private readonly ApplicationDbContext _context;
         
